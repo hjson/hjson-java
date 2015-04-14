@@ -1,0 +1,35 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'org.hjson'
+version = '0.1.1'
+
+description = """hjson"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+sourceSets {
+  main {
+    java {
+      srcDir 'src/main'
+    }
+  }
+  test {
+    java {
+      srcDir 'src/test'
+    }
+    resources {
+      srcDir 'assets'
+    }
+  }
+}
+
+repositories {
+  maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+task(test, dependsOn: ['classes','testClasses'], type: JavaExec, overwrite: true) {
+  main = 'org.hjson.test.Main'
+  classpath = files(sourceSets.main.runtimeClasspath, sourceSets.test.runtimeClasspath)
+}
