@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2013, 2015 EclipseSource.
+ * Copyright (c) 2015 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,10 +80,18 @@ public abstract class JsonValue implements Serializable {
 
   static String eol=System.getProperty("line.separator");
 
-  /** Gets the newline charater(s). */
+  /**
+   * Gets the newline charater(s).
+   *
+   * @return the eol value.
+   */
   public static String getEol() { return eol; }
 
-  /** Sets the newline charater(s). */
+  /**
+   * Sets the newline charater(s).
+   *
+   * @param value the eol value.
+   */
   public static void setEol(String value) {
     if (value.equals("\r\n") || value.equals("\n")) eol=value;
   }
@@ -236,6 +245,8 @@ public abstract class JsonValue implements Serializable {
 
   /**
    * Gets the type of this JSON value.
+   *
+   * @return the type for this instance.
    */
   public abstract JsonType getType();
 
@@ -456,8 +467,8 @@ public abstract class JsonValue implements Serializable {
    *
    * @param writer
    *          the writer to write this value to
-   * @param config
-   *          a configuration that controls the formatting or <code>null</code> for the minimal form
+   * @param format
+   *          controls the formatting
    * @throws IOException
    *           if an I/O error occurs in the writer
    */
@@ -486,8 +497,8 @@ public abstract class JsonValue implements Serializable {
   /**
    * Returns the JSON string for this value using the given formatting.
    *
-   * @param config
-   *          a configuration that controls the formatting or <code>null</code> for the minimal form
+   * @param format
+              controls the formatting
    * @return a JSON string that represents this value
    */
   public String toString(Stringify format) {

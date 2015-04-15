@@ -54,7 +54,7 @@ class HjsonParser {
 
   HjsonParser(String string) {
     this(new StringReader(string),
-          Math.max(MIN_BUFFER_SIZE, Math.min(DEFAULT_BUFFER_SIZE, string.length())));
+      Math.max(MIN_BUFFER_SIZE, Math.min(DEFAULT_BUFFER_SIZE, string.length())));
   }
 
   HjsonParser(Reader reader) {
@@ -470,5 +470,4 @@ class HjsonParser {
   private boolean isEndOfText() {
     return current==-1;
   }
-
 }

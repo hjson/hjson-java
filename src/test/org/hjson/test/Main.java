@@ -1,9 +1,7 @@
 package org.hjson.test;
 
 import org.hjson.*;
-
 import java.io.*;
-
 import static java.lang.System.out;
 
 public class Main {
