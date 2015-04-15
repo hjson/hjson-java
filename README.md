@@ -1,7 +1,7 @@
 # hjson-java
 
 [![Build Status](https://img.shields.io/travis/laktak/hjson-java.svg?style=flat-square)](http://travis-ci.org/laktak/hjson-java)
-![Maven Central](https://img.shields.io/maven-central/v/org.hjson/hjson.svg?style=flat-square)
+[![Maven Central](https://img.shields.io/maven-central/v/org.hjson/hjson.svg?style=flat-square)](http://search.maven.org/#search|ga|1|g%3A%22org.hjson%22%20a%3A%22hjson%22)
 
 [Hjson](http://hjson.org), the Human JSON. A configuration file format that caters to humans and helps reduce the errors they make.
 
@@ -48,6 +48,14 @@ Add a dependency to your `pom.xml`:
   <artifactId>hjson</artifactId>
   <version>1.0.0</version>
 </dependency>
+```
+
+## Ivy
+
+```xml
+<dependencies>
+  <dependency org="org.hjson" name="hjson" rev="1.0.0"/>
+</dependencies>
 ```
 
 # Usage
