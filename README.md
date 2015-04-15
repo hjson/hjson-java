@@ -1,5 +1,8 @@
 # hjson-java
 
+[![Build Status](https://img.shields.io/travis/laktak/hjson-java.svg?style=flat-square)](http://travis-ci.org/laktak/hjson-java)
+![Maven Central](https://img.shields.io/maven-central/v/org.hjson/hjson.svg?style=flat-square)
+
 [Hjson](http://hjson.org), the Human JSON. A configuration file format that caters to humans and helps reduce the errors they make.
 
 ```
@@ -23,9 +26,29 @@
 
 The Java implementation of Hjson is based on [minimal-json](https://github.com/ralfstx/minimal-json). For other platforms see [hjson.org](http://hjson.org).
 
-# Install
+# Install from Maven Central
 
-TODO
+## Gradle
+
+Add a dependency to your `build.gradle`:
+
+```
+dependencies {
+  compile 'org.hjson:hjson:1.0.0'
+}
+```
+
+## Maven
+
+Add a dependency to your `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>org.hjson</groupId>
+  <artifactId>hjson</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
 
 # Usage
 
