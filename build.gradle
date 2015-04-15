@@ -1,10 +1,8 @@
 apply plugin: 'java'
-apply plugin: 'maven'
 
+version = '0.1.1-SNAPSHOT'
 group = 'org.hjson'
-version = '0.1.1'
-
-description = """hjson"""
+description = """Hjson, the Human JSON."""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -25,11 +23,27 @@ sourceSets {
   }
 }
 
-repositories {
-  maven { url "http://repo.maven.apache.org/maven2" }
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
 }
 
-task(test, dependsOn: ['classes','testClasses'], type: JavaExec, overwrite: true) {
+task sourcesJar(type: Jar, dependsOn:classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+}
+
+task(testSuite, dependsOn: ['classes','testClasses'], type: JavaExec) {
   main = 'org.hjson.test.Main'
   classpath = files(sourceSets.main.runtimeClasspath, sourceSets.test.runtimeClasspath)
 }
+
+test.dependsOn testSuite
+
+apply from: 'gradle-mvn-push.gradle'

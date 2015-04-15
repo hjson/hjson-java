@@ -1,4 +1,6 @@
 .DS_Store
 gradle
 .gradle/
-build
+gradlew
+gradle.bat
+build/
