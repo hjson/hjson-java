@@ -52,6 +52,8 @@ Add a dependency to your `pom.xml`:
 
 ## Ivy
 
+Add a dependency to your `ivy.xml`:
+
 ```xml
 <dependencies>
   <dependency org="org.hjson" name="hjson" rev="1.0.0"/>
