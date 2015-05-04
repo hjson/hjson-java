@@ -46,6 +46,7 @@ public class Main {
     "pass1_test.json",
     "pass2_test.json",
     "pass3_test.json",
+    "stringify1_test.hjson",
     "strings_test.hjson",
   };
 

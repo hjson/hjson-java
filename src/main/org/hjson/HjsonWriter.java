@@ -111,8 +111,8 @@ class HjsonWriter {
       first=='{' ||
       first=='[' ||
       HjsonParser.isWhiteSpace(last) ||
-      HjsonParser.tryParseNumber(value)!=null ||
-      isKeyword(value)) {
+      HjsonParser.tryParseNumber(value, true)!=null ||
+      startsWithKeyword(value)) {
       // If the String contains no control characters, no quote characters, and no
       // backslash characters, then we can safely slap some quotes around it.
       // Otherwise we first check if the String can be expressed in multiline
@@ -153,8 +153,15 @@ class HjsonWriter {
     }
   }
 
-  static boolean isKeyword(String value) {
-    return value.equals("true") || value.equals("false") || value.equals("null");
+  static boolean startsWithKeyword(String text) {
+    int p;
+    if (text.startsWith("true") || text.startsWith("null")) p=4;
+    else if (text.startsWith("false")) p=5;
+    else return false;
+    while (p<text.length() && HjsonParser.isWhiteSpace(text.charAt(p))) p++;
+    if (p==text.length()) return true;
+    char ch=text.charAt(p);
+    return ch==',' || ch=='}' || ch==']' || ch=='#' || ch=='/' && (text.length()>p+1 && (text.charAt(p+1)=='/' || text.charAt(p+1)=='*'));
   }
 
   static boolean needsQuotes(char c) {

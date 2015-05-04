@@ -113,7 +113,7 @@ class HjsonParser {
             break;
           default:
             if (first=='-' || first>='0' && first<='9') {
-              JsonValue n=tryParseNumber(value);
+              JsonValue n=tryParseNumber(value, false);
               if (n!=null) return n;
             }
         }
@@ -304,7 +304,7 @@ class HjsonParser {
     return ch>='0' && ch<='9';
   }
 
-  static JsonValue tryParseNumber(StringBuilder value) throws IOException {
+  static JsonValue tryParseNumber(StringBuilder value, boolean stopAtNext) throws IOException {
     int idx=0, len=value.length();
     if (idx < len && value.charAt(idx)=='-') idx++;
 
@@ -329,20 +329,28 @@ class HjsonParser {
       idx++;
       if (idx < len && (value.charAt(idx)=='+' || value.charAt(idx)=='-')) idx++;
 
-      if (idx>=len || !isDigit(value.charAt(idx++))) return null;
+      if (idx >= len || !isDigit(value.charAt(idx++))) return null;
       while (idx < len && isDigit(value.charAt(idx))) idx++;
     }
-    int last=idx;
 
-    while (idx < len) {
-      if (!isWhiteSpace(value.charAt(idx++))) return null;
+    int last=idx;
+    while (idx < len && isWhiteSpace(value.charAt(idx))) idx++;
+
+    boolean foundStop = false;
+    if (idx < len && stopAtNext) {
+      // end scan if we find a control character like ,}] or a comment
+      char ch=value.charAt(idx);
+      if (ch==',' || ch=='}' || ch==']' || ch=='#' || ch=='/' && (len>idx+1 && (value.charAt(idx+1)=='/' || value.charAt(idx+1)=='*')))
+        foundStop=true;
     }
+
+    if (idx < len && !foundStop) return null;
 
     return new JsonNumber(Double.parseDouble(value.substring(0, last)));
   }
 
-  static JsonValue tryParseNumber(String value) throws IOException {
-    return tryParseNumber(new StringBuilder(value));
+  static JsonValue tryParseNumber(String value, boolean stopAtNext) throws IOException {
+    return tryParseNumber(new StringBuilder(value), stopAtNext);
   }
 
   private boolean readChar(char ch) throws IOException {
