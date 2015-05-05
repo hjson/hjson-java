@@ -477,8 +477,28 @@ public abstract class JsonValue implements Serializable {
     switch (format) {
       case PLAIN: new JsonWriter(false).save(this, buffer, 0); break;
       case FORMATTED: new JsonWriter(true).save(this, buffer, 0); break;
-      case HJSON: new HjsonWriter().save(this, buffer, 0, "", true); break;
+      case HJSON: new HjsonWriter(null).save(this, buffer, 0, "", true, true); break;
     }
+    buffer.flush();
+  }
+
+  /**
+   * Writes the Hjson representation of this value to the given writer.
+   * <p>
+   * Writing performance can be improved by using a {@link java.io.BufferedWriter BufferedWriter}.
+   * </p>
+   *
+   * @param writer
+   *          the writer to write this value to
+   * @param format
+   *          controls the formatting
+   * @throws IOException
+   *           if an I/O error occurs in the writer
+   */
+  public void writeTo(Writer writer, HjsonOptions options) throws IOException {
+    if (options==null) throw new NullPointerException("options is null");
+    WritingBuffer buffer=new WritingBuffer(writer, 128);
+    new HjsonWriter(options).save(this, buffer, 0, "", true, true);
     buffer.flush();
   }
 
@@ -498,7 +518,7 @@ public abstract class JsonValue implements Serializable {
    * Returns the JSON string for this value using the given formatting.
    *
    * @param format
-              controls the formatting
+   *          controls the formatting
    * @return a JSON string that represents this value
    */
   public String toString(Stringify format) {
@@ -512,6 +532,23 @@ public abstract class JsonValue implements Serializable {
     return writer.toString();
   }
 
+  /**
+   * Returns the JSON string for this value using the given formatting.
+   *
+   * @param format
+   *          controls the formatting
+   * @return a JSON string that represents this value
+   */
+  public String toString(HjsonOptions options) {
+    StringWriter writer=new StringWriter();
+    try {
+      writeTo(writer, options);
+    } catch(IOException exception) {
+      // StringWriter does not throw IOExceptions
+      throw new RuntimeException(exception);
+    }
+    return writer.toString();
+  }
   /**
    * Indicates whether some other object is "equal to" this one according to the contract specified
    * in {@link Object#equals(Object)}.

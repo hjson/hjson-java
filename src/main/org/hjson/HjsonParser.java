@@ -22,10 +22,7 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-
+import java.io.*;
 
 class HjsonParser {
 
@@ -33,57 +30,67 @@ class HjsonParser {
   private static final int DEFAULT_BUFFER_SIZE=1024;
 
   private final Reader reader;
-  private final char[] buffer;
-  private int bufferOffset;
   private int index;
-  private int fill;
   private int line;
   private int lineOffset;
   private int current;
-  private StringBuilder captureBuffer;
-  private int captureStart;
-
-  /*
-   * |                      bufferOffset
-   *                        v
-   * [a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t]        < input
-   *                       [l|m|n|o|p|q|r|s|t|?|?]    < buffer
-   *                          ^               ^
-   *                       |  index           fill
-   */
+  private StringBuilder captureBuffer, peek;
+  private boolean capture;
 
   HjsonParser(String string) {
-    this(new StringReader(string),
-      Math.max(MIN_BUFFER_SIZE, Math.min(DEFAULT_BUFFER_SIZE, string.length())));
+    this(new StringReader(string));
   }
 
   HjsonParser(Reader reader) {
-    this(reader, DEFAULT_BUFFER_SIZE);
+    if (reader instanceof BufferedReader)  this.reader=reader;
+    else this.reader=new BufferedReader(reader);
+    line=1;
+    peek=new StringBuilder();
   }
 
+  @Deprecated
   HjsonParser(Reader reader, int buffersize) {
-    this.reader=reader;
-    buffer=new char[ buffersize ];
-    line=1;
-    captureStart=-1;
+    this(reader);
   }
 
   JsonValue parse() throws IOException {
+    JsonValue v;
+    // Braces for the root object are optional
+
     read();
     skipWhiteSpace();
-    JsonValue result=readValue();
-    skipWhiteSpace();
-    if (!isEndOfText()) {
-      throw error("Unexpected character");
+
+    switch (current) {
+      case '[':
+      case '{':
+        v=readValue();
+        break;
+      default:
+        // look if we are dealing with a single JSON value (true/false/null/#/"")
+        // if it is multiline we assume it's a Hjson object without root braces.
+        int i=0, pline=line, c=0;
+        while (pline==1) {
+          c=peek(i++);
+          if (c=='\n') pline++;
+          else if (c<0) break;
+        }
+        // if we have multiple lines, assume optional {} (but ignore \n suffix)
+        if (pline>1 && (c!='\n' || peek(i)>=0)) v=readObject(true);
+        else v=readValue();
+        break;
     }
-    return result;
+
+    skipWhiteSpace();
+    if (!isEndOfText()) throw error("Extra characters in input");
+    return v;
+
   }
 
   private JsonValue readValue() throws IOException {
     switch(current) {
       case '"': return readString();
       case '[': return readArray();
-      case '{': return readObject();
+      case '{': return readObject(false);
       default: return readTfnns();
     }
   }
@@ -129,40 +136,40 @@ class HjsonParser {
     read();
     JsonArray array=new JsonArray();
     skipWhiteSpace();
-    if (readChar(']')) {
+    if (readIf(']')) {
       return array;
     }
     while (true) {
       skipWhiteSpace();
       array.add(readValue());
       skipWhiteSpace();
-      if (readChar(',')) skipWhiteSpace(); // , is optional
-      if (readChar(']')) break;
+      if (readIf(',')) skipWhiteSpace(); // , is optional
+      if (readIf(']')) break;
       else if (isEndOfText()) throw expected("',' or ']'");
     }
     return array;
   }
 
-  private JsonObject readObject() throws IOException {
-    read();
+  private JsonObject readObject(boolean objectWithoutBraces) throws IOException {
+    if (!objectWithoutBraces) read();
     JsonObject object=new JsonObject();
     skipWhiteSpace();
-    if (readChar('}')) {
-      return object;
-    }
     while (true) {
-      skipWhiteSpace();
+      if (objectWithoutBraces) {
+        if (isEndOfText()) break;
+      } else {
+        if (isEndOfText()) throw expected("',' or '}'");
+        if (readIf('}')) break;
+      }
       String name=readName();
       skipWhiteSpace();
-      if (!readChar(':')) {
+      if (!readIf(':')) {
         throw expected("':'");
       }
       skipWhiteSpace();
       object.add(name, readValue());
       skipWhiteSpace();
-      if (readChar(',')) skipWhiteSpace(); // , is optional
-      if (readChar('}')) break;
-      else if (isEndOfText()) throw expected("',' or '}'");
+      if (readIf(',')) skipWhiteSpace(); // , is optional
     }
     return object;
   }
@@ -191,7 +198,7 @@ class HjsonParser {
     int triple=0;
 
     // we are at '''
-    int indent=bufferOffset+index-lineOffset-4;
+    int indent=index-lineOffset-4;
 
     // skip white/to (newline)
     for (; ; ) {
@@ -208,6 +215,7 @@ class HjsonParser {
         read();
         if (triple==3) {
           if (sb.charAt(sb.length()-1)=='\n') sb.deleteCharAt(sb.length()-1);
+
           return new JsonString(sb.toString());
         }
         else continue;
@@ -245,15 +253,9 @@ class HjsonParser {
     read();
     startCapture();
     while (current!='"') {
-      if (current=='\\') {
-        pauseCapture();
-        readEscape();
-        startCapture();
-      } else if (current < 0x20) {
-        throw expected("valid string character");
-      } else {
-        read();
-      }
+      if (current=='\\') readEscape();
+      else if (current<0x20) throw expected("valid string character");
+      else read();
     }
     String string=endCapture();
     read();
@@ -261,42 +263,44 @@ class HjsonParser {
   }
 
   private void readEscape() throws IOException {
+    pauseCapture();
     read();
     switch(current) {
-    case '"':
-    case '/':
-    case '\\':
-      captureBuffer.append((char)current);
-      break;
-    case 'b':
-      captureBuffer.append('\b');
-      break;
-    case 'f':
-      captureBuffer.append('\f');
-      break;
-    case 'n':
-      captureBuffer.append('\n');
-      break;
-    case 'r':
-      captureBuffer.append('\r');
-      break;
-    case 't':
-      captureBuffer.append('\t');
-      break;
-    case 'u':
-      char[] hexChars=new char[4];
-      for (int i=0; i < 4; i++) {
-        read();
-        if (!isHexDigit()) {
-          throw expected("hexadecimal digit");
+      case '"':
+      case '/':
+      case '\\':
+        captureBuffer.append((char)current);
+        break;
+      case 'b':
+        captureBuffer.append('\b');
+        break;
+      case 'f':
+        captureBuffer.append('\f');
+        break;
+      case 'n':
+        captureBuffer.append('\n');
+        break;
+      case 'r':
+        captureBuffer.append('\r');
+        break;
+      case 't':
+        captureBuffer.append('\t');
+        break;
+      case 'u':
+        char[] hexChars=new char[4];
+        for (int i=0; i<4; i++) {
+          read();
+          if (!isHexDigit()) {
+            throw expected("hexadecimal digit");
+          }
+          hexChars[i]=(char)current;
         }
-        hexChars[i]=(char)current;
-      }
-      captureBuffer.append((char)Integer.parseInt(new String(hexChars), 16));
-      break;
-    default:
-      throw expected("valid escape sequence");
+        captureBuffer.append((char)Integer.parseInt(new String(hexChars), 16));
+        break;
+      default:
+        throw expected("valid escape sequence");
     }
+    capture=true;
     read();
   }
 
@@ -306,45 +310,45 @@ class HjsonParser {
 
   static JsonValue tryParseNumber(StringBuilder value, boolean stopAtNext) throws IOException {
     int idx=0, len=value.length();
-    if (idx < len && value.charAt(idx)=='-') idx++;
+    if (idx<len && value.charAt(idx)=='-') idx++;
 
     if (idx>=len) return null;
     char first=value.charAt(idx++);
     if (!isDigit(first)) return null;
 
-    if (first=='0' && idx < len && isDigit(value.charAt(idx)))
+    if (first=='0' && idx<len && isDigit(value.charAt(idx)))
       return null; // leading zero is not allowed
 
-    while (idx < len && isDigit(value.charAt(idx))) idx++;
+    while (idx<len && isDigit(value.charAt(idx))) idx++;
 
     // frac
-    if (idx < len && value.charAt(idx)=='.') {
+    if (idx<len && value.charAt(idx)=='.') {
       idx++;
       if (idx>=len || !isDigit(value.charAt(idx++))) return null;
-      while (idx < len && isDigit(value.charAt(idx))) idx++;
+      while (idx<len && isDigit(value.charAt(idx))) idx++;
     }
 
     // exp
-    if (idx < len && Character.toLowerCase(value.charAt(idx))=='e') {
+    if (idx<len && Character.toLowerCase(value.charAt(idx))=='e') {
       idx++;
-      if (idx < len && (value.charAt(idx)=='+' || value.charAt(idx)=='-')) idx++;
+      if (idx<len && (value.charAt(idx)=='+' || value.charAt(idx)=='-')) idx++;
 
-      if (idx >= len || !isDigit(value.charAt(idx++))) return null;
-      while (idx < len && isDigit(value.charAt(idx))) idx++;
+      if (idx>=len || !isDigit(value.charAt(idx++))) return null;
+      while (idx<len && isDigit(value.charAt(idx))) idx++;
     }
 
     int last=idx;
-    while (idx < len && isWhiteSpace(value.charAt(idx))) idx++;
+    while (idx<len && isWhiteSpace(value.charAt(idx))) idx++;
 
     boolean foundStop = false;
-    if (idx < len && stopAtNext) {
+    if (idx<len && stopAtNext) {
       // end scan if we find a control character like ,}] or a comment
       char ch=value.charAt(idx);
       if (ch==',' || ch=='}' || ch==']' || ch=='#' || ch=='/' && (len>idx+1 && (value.charAt(idx+1)=='/' || value.charAt(idx+1)=='*')))
         foundStop=true;
     }
 
-    if (idx < len && !foundStop) return null;
+    if (idx<len && !foundStop) return null;
 
     return new JsonNumber(Double.parseDouble(value.substring(0, last)));
   }
@@ -353,7 +357,7 @@ class HjsonParser {
     return tryParseNumber(new StringBuilder(value), stopAtNext);
   }
 
-  private boolean readChar(char ch) throws IOException {
+  private boolean readIf(char ch) throws IOException {
     if (current!=ch) {
       return false;
     }
@@ -380,70 +384,65 @@ class HjsonParser {
     }
   }
 
-  private boolean fillBuffer(boolean peek) throws IOException {
-    int p=peek ? 1 : 0;
-    if (index==fill) {
-      if (captureStart!=-1) {
-        captureBuffer.append(buffer, captureStart, fill-captureStart-p);
-        captureStart=0;
-      }
-      bufferOffset += fill-p;
-      if (peek) buffer[0]=(char)current;
-      fill=reader.read(buffer, p, buffer.length-p);
-      index=p;
-      if (fill==-1) {
-        if (peek) fill=1;
-        return false;
-      } else fill += p;
+  private int peek(int idx) throws IOException {
+    while (idx>=peek.length()) {
+      int c=reader.read();
+      if (c<0) return c;
+      peek.append((char)c);
     }
-    return true;
+    return peek.charAt(idx);
   }
 
   private int peek() throws IOException {
-    if (fill==-1 || !fillBuffer(true)) {
-      return -1;
-    }
-    return buffer[index];
+    return peek(0);
   }
 
   private boolean read() throws IOException {
-    if (fill==-1 || !fillBuffer(false)) {
-      current=-1;
-      return false;
-    }
 
     if (current=='\n') {
       line++;
-      lineOffset=bufferOffset+index;
+      lineOffset=index;
     }
-    current=buffer[index++];
+
+    if (peek.length()>0)
+    {
+      // normally peek will only hold not more than one character so this should not matter for performance
+      current=peek.charAt(0);
+      peek.deleteCharAt(0);
+    }
+    else current=reader.read();
+
+    if (current<0) return false;
+
+    index++;
+    if (capture) captureBuffer.append((char)current);
+
     return true;
   }
 
   private void startCapture() {
-    if (captureBuffer==null) {
+    if (captureBuffer==null)
       captureBuffer=new StringBuilder();
-    }
-    captureStart=index-1;
+    capture=true;
+    captureBuffer.append((char)current);
   }
 
   private void pauseCapture() {
-    int end=current==-1 ? index : index-1;
-    captureBuffer.append(buffer, captureStart, end-captureStart);
-    captureStart=-1;
+    int len=captureBuffer.length();
+    if (len>0) captureBuffer.deleteCharAt(len-1);
+    capture=false;
   }
 
   private String endCapture() {
-    int end=current==-1 ? index : index-1;
+    pauseCapture();
     String captured;
     if (captureBuffer.length()>0) {
-      captureBuffer.append(buffer, captureStart, end-captureStart);
       captured=captureBuffer.toString();
       captureBuffer.setLength(0);
     } else {
-      captured=new String(buffer, captureStart, end-captureStart);
+      captured="";
     }
-    captureStart=-1;
+    capture=false;
     return captured;
   }
 
@@ -455,9 +454,8 @@ class HjsonParser {
   }
 
   private ParseException error(String message) {
-    int absIndex=bufferOffset+index;
-    int column=absIndex-lineOffset;
-    int offset=isEndOfText() ? absIndex : absIndex-1;
+    int column=index-lineOffset;
+    int offset=isEndOfText()?index:index-1;
     return new ParseException(message, offset, line, column-1);
   }
 

@@ -27,7 +27,11 @@ import java.io.Writer;
 
 class HjsonWriter {
 
-  public HjsonWriter() {
+  boolean emitRootBraces;
+
+  public HjsonWriter(HjsonOptions options) {
+    if (options!=null) emitRootBraces=options.emitRootBraces;
+    else emitRootBraces=true;
   }
 
   void nl(Writer tw, int level) throws IOException {
@@ -35,7 +39,7 @@ class HjsonWriter {
     for (int i=0; i<level; i++) tw.write("  ");
   }
 
-  public void save(JsonValue value, Writer tw, int level, String separator, boolean isRoot) throws IOException {
+  public void save(JsonValue value, Writer tw, int level, String separator, boolean noIndent, boolean isRootObject) throws IOException {
     if (value==null) {
       tw.write(separator);
       tw.write("null");
@@ -44,25 +48,32 @@ class HjsonWriter {
     switch (value.getType()) {
       case OBJECT:
         JsonObject obj=value.asObject();
-        if (!isRoot) { if (obj.size()>0) nl(tw, level); else tw.write(separator); }
-        tw.write('{');
+        boolean showBraces=!isRootObject || emitRootBraces;
+        if (!noIndent) { if (obj.size()>0) nl(tw, level); else tw.write(separator); }
+        if (showBraces) tw.write('{');
+        else level--; // reduce level for root
+
+        boolean skipFirst=!showBraces;
         for (JsonObject.Member pair : obj) {
-          nl(tw, level+1);
+          if (!skipFirst) nl(tw, level+1); else skipFirst=false;
           tw.write(escapeName(pair.getName()));
           tw.write(":");
-          save(pair.getValue(), tw, level+1, " ", false);
+          save(pair.getValue(), tw, level+1, " ", false, false);
         }
-        if (obj.size()>0) nl(tw, level);
-        tw.write('}');
+
+        if (showBraces) {
+          if (obj.size()>0) nl(tw, level);
+          tw.write('}');
+        }
         break;
       case ARRAY:
         JsonArray arr=value.asArray();
         int n=arr.size();
-        if (!isRoot) { if (n>0) nl(tw, level); else tw.write(separator); }
+        if (!noIndent) { if (n>0) nl(tw, level); else tw.write(separator); }
         tw.write('[');
         for (int i=0; i<n; i++) {
           nl(tw, level+1);
-          save(arr.get(i), tw, level+1, "", true);
+          save(arr.get(i), tw, level+1, "", true, false);
         }
         if (n>0) nl(tw, level);
         tw.write(']');

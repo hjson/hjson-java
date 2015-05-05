@@ -98,9 +98,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   private JsonObject(JsonObject object, boolean unmodifiable) {
-    if (object==null) {
-      throw new NullPointerException("object is null");
-    }
+    if (object==null) throw new NullPointerException("object is null");
     if (unmodifiable) {
       names=Collections.unmodifiableList(object.names);
       values=Collections.unmodifiableList(object.values);

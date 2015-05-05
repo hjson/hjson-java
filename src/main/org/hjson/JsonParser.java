@@ -63,7 +63,7 @@ class JsonParser {
 
   JsonParser(Reader reader, int buffersize) {
     this.reader=reader;
-    buffer=new char[ buffersize ];
+    buffer=new char[buffersize];
     line=1;
     captureStart=-1;
   }
@@ -79,32 +79,32 @@ class JsonParser {
 
   private JsonValue readValue() throws IOException {
     switch(current) {
-    case 'n':
-      return readNull();
-    case 't':
-      return readTrue();
-    case 'f':
-      return readFalse();
-    case '"':
-      return readString();
-    case '[':
-      return readArray();
-    case '{':
-      return readObject();
-    case '-':
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-      return readNumber();
-    default:
-      throw expected("value");
+      case 'n':
+        return readNull();
+      case 't':
+        return readTrue();
+      case 'f':
+        return readFalse();
+      case '"':
+        return readString();
+      case '[':
+        return readArray();
+      case '{':
+        return readObject();
+      case '-':
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        return readNumber();
+      default:
+        throw expected("value");
     }
   }
 
@@ -112,15 +112,15 @@ class JsonParser {
     read();
     JsonArray array=new JsonArray();
     skipWhiteSpace();
-    if (readChar(']')) {
+    if (readIf(']')) {
       return array;
     }
     do {
       skipWhiteSpace();
       array.add(readValue());
       skipWhiteSpace();
-    } while (readChar(','));
-    if (!readChar(']')) {
+    } while (readIf(','));
+    if (!readIf(']')) {
       throw expected("',' or ']'");
     }
     return array;
@@ -130,21 +130,21 @@ class JsonParser {
     read();
     JsonObject object=new JsonObject();
     skipWhiteSpace();
-    if (readChar('}')) {
+    if (readIf('}')) {
       return object;
     }
     do {
       skipWhiteSpace();
       String name=readName();
       skipWhiteSpace();
-      if (!readChar(':')) {
+      if (!readIf(':')) {
         throw expected("':'");
       }
       skipWhiteSpace();
       object.add(name, readValue());
       skipWhiteSpace();
-    } while (readChar(','));
-    if (!readChar('}')) {
+    } while (readIf(','));
+    if (!readIf('}')) {
       throw expected("',' or '}'");
     }
     return object;
@@ -183,7 +183,7 @@ class JsonParser {
   }
 
   private void readRequiredChar(char ch) throws IOException {
-    if (!readChar(ch)) {
+    if (!readIf(ch)) {
       throw expected("'"+ch+"'");
     }
   }
@@ -200,7 +200,7 @@ class JsonParser {
         pauseCapture();
         readEscape();
         startCapture();
-      } else if (current < 0x20) {
+      } else if (current<0x20) {
         throw expected("valid string character");
       } else {
         read();
@@ -214,46 +214,46 @@ class JsonParser {
   private void readEscape() throws IOException {
     read();
     switch(current) {
-    case '"':
-    case '/':
-    case '\\':
-      captureBuffer.append((char)current);
-      break;
-    case 'b':
-      captureBuffer.append('\b');
-      break;
-    case 'f':
-      captureBuffer.append('\f');
-      break;
-    case 'n':
-      captureBuffer.append('\n');
-      break;
-    case 'r':
-      captureBuffer.append('\r');
-      break;
-    case 't':
-      captureBuffer.append('\t');
-      break;
-    case 'u':
-      char[] hexChars=new char[4];
-      for(int i=0; i < 4; i++) {
-        read();
-        if (!isHexDigit()) {
-          throw expected("hexadecimal digit");
+      case '"':
+      case '/':
+      case '\\':
+        captureBuffer.append((char)current);
+        break;
+      case 'b':
+        captureBuffer.append('\b');
+        break;
+      case 'f':
+        captureBuffer.append('\f');
+        break;
+      case 'n':
+        captureBuffer.append('\n');
+        break;
+      case 'r':
+        captureBuffer.append('\r');
+        break;
+      case 't':
+        captureBuffer.append('\t');
+        break;
+      case 'u':
+        char[] hexChars=new char[4];
+        for(int i=0; i<4; i++) {
+          read();
+          if (!isHexDigit()) {
+            throw expected("hexadecimal digit");
+          }
+          hexChars[i]=(char)current;
         }
-        hexChars[i]=(char)current;
-      }
-      captureBuffer.append((char)Integer.parseInt(new String(hexChars), 16));
-      break;
-    default:
-      throw expected("valid escape sequence");
+        captureBuffer.append((char)Integer.parseInt(new String(hexChars), 16));
+        break;
+      default:
+        throw expected("valid escape sequence");
     }
     read();
   }
 
   private JsonValue readNumber() throws IOException {
     startCapture();
-    readChar('-');
+    readIf('-');
     int firstDigit=current;
     if (!readDigit()) {
       throw expected("digit");
@@ -268,7 +268,7 @@ class JsonParser {
   }
 
   private boolean readFraction() throws IOException {
-    if (!readChar('.')) {
+    if (!readIf('.')) {
       return false;
     }
     if (!readDigit()) {
@@ -280,11 +280,11 @@ class JsonParser {
   }
 
   private boolean readExponent() throws IOException {
-    if (!readChar('e') && !readChar('E')) {
+    if (!readIf('e') && !readIf('E')) {
       return false;
     }
-    if (!readChar('+')) {
-      readChar('-');
+    if (!readIf('+')) {
+      readIf('-');
     }
     if (!readDigit()) {
       throw expected("digit");
@@ -294,7 +294,7 @@ class JsonParser {
     return true;
   }
 
-  private boolean readChar(char ch) throws IOException {
+  private boolean readIf(char ch) throws IOException {
     if (current!=ch) {
       return false;
     }
