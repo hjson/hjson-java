@@ -41,7 +41,7 @@ public class HjsonOptions {
   /**
    * Sets whether root braces should be emitted.
    *
-   * @param value
+   * @param value value
    */
   public void setEmitRootBraces(boolean value) { emitRootBraces=value; }
 }
