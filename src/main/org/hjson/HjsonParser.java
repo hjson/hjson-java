@@ -74,8 +74,8 @@ class HjsonParser {
           if (c=='\n') pline++;
           else if (c<0) break;
         }
-        // if we have multiple lines, assume optional {} (but ignore \n suffix)
-        if (pline>1 && (c!='\n' || peek(i)>=0)) v=readObject(true);
+        // if we have multiple lines, assume optional {}
+        if (pline>1) v=readObject(true);
         else v=readValue();
         break;
     }
@@ -145,7 +145,7 @@ class HjsonParser {
       skipWhiteSpace();
       if (readIf(',')) skipWhiteSpace(); // , is optional
       if (readIf(']')) break;
-      else if (isEndOfText()) throw expected("',' or ']'");
+      else if (isEndOfText()) throw error("End of input while parsing an array (did you forget a closing ']'?)");
     }
     return array;
   }
@@ -158,7 +158,7 @@ class HjsonParser {
       if (objectWithoutBraces) {
         if (isEndOfText()) break;
       } else {
-        if (isEndOfText()) throw expected("',' or '}'");
+        if (isEndOfText()) throw error("End of input while parsing an object (did you forget a closing '}'?)");
         if (readIf('}')) break;
       }
       String name=readName();
@@ -180,11 +180,11 @@ class HjsonParser {
     StringBuilder name=new StringBuilder();
     while (true) {
       if (current==':') {
-        if (name.length()==0) throw error("Empty key name requires quotes");
+        if (name.length()==0) throw error("Found ':' but no key name (for an empty key name use quotes)");
         return name.toString();
       }
       else if (current<=' ' || current=='{' || current=='}' || current=='[' || current==']' || current==',')
-        throw error("Key names that include {}[],: or whitespace require quotes");
+        throw error("Found '" + (char)current + "' where a key name was expected (check your syntax or use quotes if the key name includes {}[],: or whitespace)");
 
       name.append((char)current);
       read();
