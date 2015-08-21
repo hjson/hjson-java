@@ -49,6 +49,7 @@ public class Main {
     "root_test.hjson",
     "stringify1_test.hjson",
     "strings_test.hjson",
+    "trail_test.hjson",
   };
 
   public static String convertStreamToString(InputStream is) throws IOException {

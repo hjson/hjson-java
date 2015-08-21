@@ -124,7 +124,10 @@ class HjsonParser {
               if (n!=null) return n;
             }
         }
-        if (isEol) return new JsonString(value.toString());
+        if (isEol) {
+          // remove any whitespace at the end (ignored in quoteless strings)
+          return new JsonString(value.toString().trim());
+        }
       }
       value.append((char)current);
     }

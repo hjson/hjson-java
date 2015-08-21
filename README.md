@@ -164,3 +164,6 @@ jsonObject.toString(); // plain
 
 [Documentation](http://laktak.github.io/hjson-java/)
 
+# History
+
+[see history.md](history.md)
