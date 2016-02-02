@@ -185,14 +185,14 @@ class HjsonParser {
     while (true) {
       if (current==':') {
         if (name.length()==0) throw error("Found ':' but no key name (for an empty key name use quotes)");
-        else if (space>=0 && space!=name.length()) { index=start+space; throw error("Found ' ' in your key name (use quotes to include spaces)"); }
+        else if (space>=0 && space!=name.length()) { index=start+space; throw error("Found whitespace in your key name (use quotes to include)"); }
         return name.toString();
+      }
+      else if (isWhiteSpace(current)) {
+        if (space<0) space=name.length();
       }
       else if (current<' ' || current=='{' || current=='}' || current=='[' || current==']' || current==',') {
         throw error("Found '" + (char)current + "' where a key name was expected (check your syntax or use quotes if the key name includes {}[],: or whitespace)");
-      }
-      else if (current==' ') {
-        if (space<0) space=name.length();
       }
       else name.append((char)current);
       read();
