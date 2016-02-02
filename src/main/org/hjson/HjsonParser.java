@@ -181,15 +181,20 @@ class HjsonParser {
     if (current=='"') return readStringInternal();
 
     StringBuilder name=new StringBuilder();
+    int space=-1, start=index;
     while (true) {
       if (current==':') {
         if (name.length()==0) throw error("Found ':' but no key name (for an empty key name use quotes)");
+        else if (space>=0 && space!=name.length()) { index=start+space; throw error("Found ' ' in your key name (use quotes to include spaces)"); }
         return name.toString();
       }
-      else if (current<=' ' || current=='{' || current=='}' || current=='[' || current==']' || current==',')
+      else if (current<' ' || current=='{' || current=='}' || current=='[' || current==']' || current==',') {
         throw error("Found '" + (char)current + "' where a key name was expected (check your syntax or use quotes if the key name includes {}[],: or whitespace)");
-
-      name.append((char)current);
+      }
+      else if (current==' ') {
+        if (space<0) space=name.length();
+      }
+      else name.append((char)current);
       read();
     }
   }
