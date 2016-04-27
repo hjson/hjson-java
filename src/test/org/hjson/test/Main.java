@@ -46,6 +46,8 @@ public class Main {
     "pass1_test.json",
     "pass2_test.json",
     "pass3_test.json",
+    "pass4_test.json",
+    "passSingle_test.hjson",
     "root_test.hjson",
     "stringify1_test.hjson",
     "strings_test.hjson",

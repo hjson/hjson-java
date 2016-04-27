@@ -23,11 +23,13 @@ package org.hjson;
 
 import java.io.IOException;
 import java.io.Writer;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class HjsonWriter {
 
   boolean emitRootBraces;
+  static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"]|//|/\\*|'''");
 
   public HjsonWriter(HjsonOptions options) {
     if (options!=null) emitRootBraces=options.emitRootBraces;
@@ -93,21 +95,17 @@ class HjsonWriter {
   }
 
   static String escapeName(String name) {
-    boolean needsEscape=name.length()==0;
-    for(char ch : name.toCharArray()) {
-      if (HjsonParser.isWhiteSpace(ch) || ch=='{' || ch=='}' || ch=='[' || ch==']' || ch==',' || ch==':') {
-        needsEscape=true;
-        break;
-      }
-    }
-    if (needsEscape) return "\""+JsonWriter.escapeString(name)+"\"";
-    else return name;
+    if (name.length()==0 || needsEscapeName.matcher(name).find())
+      return "\""+JsonWriter.escapeString(name)+"\"";
+    else
+      return name;
   }
 
   void writeString(String value, Writer tw, int level, String separator) throws IOException {
     if (value.length()==0) { tw.write(separator+"\"\""); return; }
 
-    char first=value.charAt(0), second=value.length()>1?value.charAt(1):'\0', last=value.charAt(value.length()-1);
+    char left=value.charAt(0), right=value.charAt(value.length()-1);
+    char left1=value.length()>1?value.charAt(1):'\0', left2=value.length()>2?value.charAt(2):'\0';
     boolean doEscape=false;
     char[] valuec=value.toCharArray();
     for(char ch : valuec) {
@@ -115,13 +113,14 @@ class HjsonWriter {
     }
 
     if (doEscape ||
-      HjsonParser.isWhiteSpace(first) ||
-      first=='"' ||
-      first=='#' ||
-      first=='/' && (second=='*' || second=='/') ||
-      first=='{' ||
-      first=='[' ||
-      HjsonParser.isWhiteSpace(last) ||
+      HjsonParser.isWhiteSpace(left) ||
+      left=='"' ||
+      left=='\'' && left1=='\'' && left2=='\'' ||
+      left=='#' ||
+      left=='/' && (left1=='*' || left1=='/') ||
+      left=='{' ||
+      left=='[' ||
+      HjsonParser.isWhiteSpace(right) ||
       HjsonParser.tryParseNumber(value, true)!=null ||
       startsWithKeyword(value)) {
       // If the String contains no control characters, no quote characters, and no

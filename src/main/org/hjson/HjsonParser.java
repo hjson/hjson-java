@@ -29,7 +29,8 @@ class HjsonParser {
   private static final int MIN_BUFFER_SIZE=10;
   private static final int DEFAULT_BUFFER_SIZE=1024;
 
-  private final Reader reader;
+  private final String buffer;
+  private Reader reader;
   private int index;
   private int line;
   private int lineOffset;
@@ -38,19 +39,30 @@ class HjsonParser {
   private boolean capture;
 
   HjsonParser(String string) {
-    this(new StringReader(string));
+    buffer=string;
+    reset();
   }
 
-  HjsonParser(Reader reader) {
-    if (reader instanceof BufferedReader)  this.reader=reader;
-    else this.reader=new BufferedReader(reader);
+  HjsonParser(Reader reader) throws IOException {
+    this(readToEnd(reader));
+  }
+
+  static String readToEnd(Reader reader) throws IOException {
+    // read everything into a buffer
+    int n;
+    char[] part=new char[8*1024];
+    StringBuilder sb=new StringBuilder();
+    while ((n=reader.read(part, 0, part.length))!=-1) sb.append(part, 0, n);
+    return sb.toString();
+  }
+
+  void reset() {
+    index=lineOffset=current=0;
     line=1;
     peek=new StringBuilder();
-  }
-
-  @Deprecated
-  HjsonParser(Reader reader, int buffersize) {
-    this(reader);
+    reader=new StringReader(buffer);
+    capture=false;
+    captureBuffer=null;
   }
 
   JsonValue parse() throws IOException {
@@ -66,24 +78,24 @@ class HjsonParser {
         v=readValue();
         break;
       default:
-        // look if we are dealing with a single JSON value (true/false/null/#/"")
-        // if it is multiline we assume it's a Hjson object without root braces.
-        int i=0, pline=line, c=0;
-        while (pline==1) {
-          c=peek(i++);
-          if (c=='\n') pline++;
-          else if (c<0) break;
+        try {
+          // assume we have a root object without braces
+          v=readObject(true);
+        } catch (Exception exception) {
+          // test if we are dealing with a single JSON value instead (true/false/null/num/"")
+          reset();
+          read();
+          skipWhiteSpace();
+          try { v=readValue(); break; }
+          catch (Exception exception2) { }
+          throw exception; // throw original error
         }
-        // if we have multiple lines, assume optional {}
-        if (pline>1) v=readObject(true);
-        else v=readValue();
         break;
     }
 
     skipWhiteSpace();
-    if (!isEndOfText()) throw error("Extra characters in input");
+    if (!isEndOfText()) throw error("Extra characters in input: "+current);
     return v;
-
   }
 
   private JsonValue readValue() throws IOException {
@@ -101,9 +113,10 @@ class HjsonParser {
     StringBuilder value=new StringBuilder();
     int first=current;
     value.append((char)current);
-    while (read()) {
+    for (;;) {
+      read();
       if (first=='\'' && value.length()==3 && value.toString().equals("'''")) return readMlString();
-      boolean isEol=current=='\r' || current=='\n';
+      boolean isEol=current<0 || current=='\r' || current=='\n';
       if (isEol || current==',' ||
         current=='}' || current==']' ||
         current=='#' ||
@@ -131,8 +144,6 @@ class HjsonParser {
       }
       value.append((char)current);
     }
-
-    throw error("bad value");
   }
 
   private JsonArray readArray() throws IOException {
@@ -348,7 +359,7 @@ class HjsonParser {
     int last=idx;
     while (idx<len && isWhiteSpace(value.charAt(idx))) idx++;
 
-    boolean foundStop = false;
+    boolean foundStop=false;
     if (idx<len && stopAtNext) {
       // end scan if we find a control character like ,}] or a comment
       char ch=value.charAt(idx);
