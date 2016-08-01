@@ -112,6 +112,8 @@ class HjsonParser {
     // returns string, true, false, or null.
     StringBuilder value=new StringBuilder();
     int first=current;
+    if (isPunctuatorChar(first))
+      throw error("Found a punctuator character '" + (char)first + "' when excpecting a quoteless string (check your syntax)");
     value.append((char)current);
     for (;;) {
       read();
@@ -470,6 +472,10 @@ class HjsonParser {
       return error("Unexpected end of input");
     }
     return error("Expected "+expected);
+  }
+
+  private boolean isPunctuatorChar(int c) {
+    return c == '{' || c == '}' || c == '[' || c == ']' || c == ',' || c == ':';
   }
 
   private ParseException error(String message) {

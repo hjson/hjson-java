@@ -6,54 +6,6 @@ import static java.lang.System.out;
 
 public class Main {
 
-  private static String[] testNames={
-    "comments_test.hjson",
-    "fail10_test.json",
-    "fail11_test.json",
-    "fail12_test.json",
-    "fail13_test.json",
-    "fail14_test.json",
-    "fail15_test.json",
-    "fail16_test.json",
-    "fail17_test.json",
-    "fail19_test.json",
-    "fail20_test.json",
-    "fail21_test.json",
-    "fail22_test.json",
-    "fail23_test.json",
-    "fail24_test.json",
-    "fail26_test.json",
-    "fail28_test.json",
-    "fail29_test.json",
-    "fail2_test.json",
-    "fail30_test.json",
-    "fail31_test.json",
-    "fail32_test.json",
-    "fail33_test.json",
-    "fail5_test.json",
-    "fail6_test.json",
-    "fail7_test.json",
-    "fail8_test.json",
-    "failKey1_test.hjson",
-    "failKey2_test.hjson",
-    "failKey3_test.hjson",
-    "failObj1_test.hjson",
-    "failObj2_test.hjson",
-    "failObj3_test.hjson",
-    "kan_test.hjson",
-    "keys_test.hjson",
-    "oa_test.hjson",
-    "pass1_test.json",
-    "pass2_test.json",
-    "pass3_test.json",
-    "pass4_test.json",
-    "passSingle_test.hjson",
-    "root_test.hjson",
-    "stringify1_test.hjson",
-    "strings_test.hjson",
-    "trail_test.hjson",
-  };
-
   public static String convertStreamToString(InputStream is) throws IOException {
     Writer writer=new StringWriter();
     char[] buffer=new char[1024];
@@ -129,20 +81,28 @@ public class Main {
 
     out.println("running tests...");
 
+    String[] testNames=load("testlist.txt", false).split("\n");
+    boolean allOK=true;
+
     for (String file : testNames) {
       int extIdx=file.lastIndexOf('.');
       String name=file.substring(0, extIdx);
       name=name.substring(0, name.length()-5);
       //if (filter!=null && !name.Contains(filter)) continue;
 
-      if (!test(name, file, false, false)
-        || !test(name, file, true, false)
-        || !test(name, file, false, true)
-        || !test(name, file, true, true)) { System.exit(1); return; }
-      out.println("- "+name+" OK");
+      if (test(name, file, false, false)
+        && test(name, file, true, false)
+        && test(name, file, false, true)
+        && test(name, file, true, true)) {
+        out.println("- "+name+" OK");
+      }
+      else { allOK=false; }
     }
-    out.println("ALL OK!");
 
+    if (!allOK) {
+      out.println("FAILED!");
+      System.exit(1);
+    } else { out.println("ALL OK!"); }
 
   }
 }

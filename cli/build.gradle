@@ -1,0 +1,69 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'application'
+
+version = '2.0.0'
+group = 'org.hjson.cli'
+description = """Hjson CLI"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+sourceSets {
+  main {
+    java {
+      srcDir 'src'
+    }
+  }
+}
+
+repositories {
+  flatDir {
+    dirs '../build/libs'
+  }
+  mavenCentral()
+}
+
+dependencies {
+  compile 'org.hjson:hjson:'+version
+  compile 'commons-cli:commons-cli:1.3.1'
+}
+
+mainClassName = 'org.hjson.cli.Main'
+
+jar {
+  baseName = 'Hjson'
+  manifest {
+    attributes(
+      'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+      'Main-Class': 'org.hjson.cli.Main',
+      'Hjson-Version': version,
+    )
+  }
+}
+
+task distjar(type: Jar) {
+  manifest=jar.manifest
+  archiveName="Hjson-cli.jar"
+  //baseName="Hjson-dist"
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  with jar
+
+}
+
+task dist(type: Copy, dependsOn: distjar) {
+  from('build/libs') {
+    include '*.jar'
+  }
+  from('bin') {
+    include '*'
+  }
+  into 'build/target'
+}
+
+task zip(type:Zip, dependsOn: dist) {
+ from ('build/target')
+ include '*'
+ archiveName 'hjson.zip'
+ destinationDir file('build/zip')
+}
