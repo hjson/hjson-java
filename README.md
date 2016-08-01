@@ -29,6 +29,14 @@
 
 The Java implementation of Hjson is based on [minimal-json](https://github.com/ralfstx/minimal-json). For other platforms see [hjson.org](http://hjson.org).
 
+# CLI
+
+You can install the Hjson command line tool by downloading and unpacking the latest [*hjson.zip*](https://github.com/laktak/hjson-java/releases).
+
+- run `hjson -h` for help
+- `hjson file.json` will convert to Hjson.
+- `hjson -j file.hjson` will convert to JSON.
+
 # Install from Maven Central
 
 ## Gradle
