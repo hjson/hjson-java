@@ -1,5 +1,7 @@
 # hjson-java History
 
+- v2.0.1
+  - move to hjson org
 - v2.0.0
   - fix quoteless string starting with punctuator
   - add cli
