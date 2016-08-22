@@ -535,4 +535,8 @@ public abstract class JsonValue implements Serializable {
   public int hashCode() {
     return super.hashCode();
   }
+
+  static boolean isPunctuatorChar(int c) {
+    return c == '{' || c == '}' || c == '[' || c == ']' || c == ',' || c == ':';
+  }
 }

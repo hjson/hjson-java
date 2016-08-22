@@ -112,7 +112,7 @@ class HjsonParser {
     // returns string, true, false, or null.
     StringBuilder value=new StringBuilder();
     int first=current;
-    if (isPunctuatorChar(first))
+    if (JsonValue.isPunctuatorChar(first))
       throw error("Found a punctuator character '" + (char)first + "' when excpecting a quoteless string (check your syntax)");
     value.append((char)current);
     for (;;) {
@@ -200,14 +200,13 @@ class HjsonParser {
         if (name.length()==0) throw error("Found ':' but no key name (for an empty key name use quotes)");
         else if (space>=0 && space!=name.length()) { index=start+space; throw error("Found whitespace in your key name (use quotes to include)"); }
         return name.toString();
-      }
-      else if (isWhiteSpace(current)) {
+      } else if (isWhiteSpace(current)) {
         if (space<0) space=name.length();
-      }
-      else if (current<' ' || current=='{' || current=='}' || current=='[' || current==']' || current==',') {
+      } else if (current<' ') {
+        throw error("Name is not closed");
+      } else if (JsonValue.isPunctuatorChar(current)) {
         throw error("Found '" + (char)current + "' where a key name was expected (check your syntax or use quotes if the key name includes {}[],: or whitespace)");
-      }
-      else name.append((char)current);
+      } else name.append((char)current);
       read();
     }
   }
@@ -472,10 +471,6 @@ class HjsonParser {
       return error("Unexpected end of input");
     }
     return error("Expected "+expected);
-  }
-
-  private boolean isPunctuatorChar(int c) {
-    return c == '{' || c == '}' || c == '[' || c == ']' || c == ',' || c == ':';
   }
 
   private ParseException error(String message) {

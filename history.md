@@ -1,5 +1,7 @@
 # hjson-java History
 
+- v2.0.5
+  - fix stringify for strings staring with a punctuator char
 - v2.0.1
   - move to hjson org
 - v2.0.0

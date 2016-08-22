@@ -113,14 +113,12 @@ class HjsonWriter {
     }
 
     if (doEscape ||
-      HjsonParser.isWhiteSpace(left) ||
+      HjsonParser.isWhiteSpace(left) || HjsonParser.isWhiteSpace(right) ||
       left=='"' ||
       left=='\'' && left1=='\'' && left2=='\'' ||
       left=='#' ||
       left=='/' && (left1=='*' || left1=='/') ||
-      left=='{' ||
-      left=='[' ||
-      HjsonParser.isWhiteSpace(right) ||
+      JsonValue.isPunctuatorChar(left) ||
       HjsonParser.tryParseNumber(value, true)!=null ||
       startsWithKeyword(value)) {
       // If the String contains no control characters, no quote characters, and no
