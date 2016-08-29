@@ -66,7 +66,6 @@ class HjsonParser {
   }
 
   JsonValue parse() throws IOException {
-    JsonValue v;
     // Braces for the root object are optional
 
     read();
@@ -75,24 +74,24 @@ class HjsonParser {
     switch (current) {
       case '[':
       case '{':
-        v=readValue();
-        break;
+        return checkTrailing(readValue());
       default:
         try {
           // assume we have a root object without braces
-          v=readObject(true);
+          return checkTrailing(readObject(true));
         } catch (Exception exception) {
           // test if we are dealing with a single JSON value instead (true/false/null/num/"")
           reset();
           read();
           skipWhiteSpace();
-          try { v=readValue(); break; }
+          try { return checkTrailing(readValue()); }
           catch (Exception exception2) { }
           throw exception; // throw original error
         }
-        break;
     }
+  }
 
+  JsonValue checkTrailing(JsonValue v) throws ParseException, IOException {
     skipWhiteSpace();
     if (!isEndOfText()) throw error("Extra characters in input: "+current);
     return v;
@@ -113,7 +112,7 @@ class HjsonParser {
     StringBuilder value=new StringBuilder();
     int first=current;
     if (JsonValue.isPunctuatorChar(first))
-      throw error("Found a punctuator character '" + (char)first + "' when excpecting a quoteless string (check your syntax)");
+      throw error("Found a punctuator character '" + (char)first + "' when expecting a quoteless string (check your syntax)");
     value.append((char)current);
     for (;;) {
       read();
