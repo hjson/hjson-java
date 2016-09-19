@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2013, 2015 EclipseSource.
- * Copyright (c) 2015 Christian Zangl
+ * Copyright (c) 2015-2016 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,6 @@ class JsonNumber extends JsonValue {
   private final double value;
 
   JsonNumber(double value) {
-    if (Double.isInfinite(value) || Double.isNaN(value))
-      throw new IllegalArgumentException("Infinite and NaN values not permitted in JSON");
-    else if (value==-0) value=0;
     this.value=value;
   }
 

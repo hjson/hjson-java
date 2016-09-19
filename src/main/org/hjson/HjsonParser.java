@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2013, 2015 EclipseSource.
- * Copyright (c) 2015 Christian Zangl
+ * Copyright (c) 2015-2016 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,13 +38,17 @@ class HjsonParser {
   private StringBuilder captureBuffer, peek;
   private boolean capture;
 
-  HjsonParser(String string) {
+  private IHjsonDsfProvider[] dsfProviders;
+
+  HjsonParser(String string, HjsonOptions options) {
     buffer=string;
     reset();
+    if (options!=null) dsfProviders=options.getDsfProviders();
+    else dsfProviders=new IHjsonDsfProvider[0];
   }
 
-  HjsonParser(Reader reader) throws IOException {
-    this(readToEnd(reader));
+  HjsonParser(Reader reader, HjsonOptions options) throws IOException {
+    this(readToEnd(reader), options);
   }
 
   static String readToEnd(Reader reader) throws IOException {
@@ -140,7 +144,7 @@ class HjsonParser {
         }
         if (isEol) {
           // remove any whitespace at the end (ignored in quoteless strings)
-          return new JsonString(value.toString().trim());
+          return HjsonDsf.parse(dsfProviders, value.toString().trim());
         }
       }
       value.append((char)current);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Christian Zangl
+ * Copyright (c) 2015-2016 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,12 @@ package org.hjson;
  */
 public class HjsonOptions {
 
-  boolean emitRootBraces;
+  private boolean emitRootBraces;
+  private IHjsonDsfProvider[] dsf;
 
   public HjsonOptions() {
+    emitRootBraces = true; // default
+    dsf=new IHjsonDsfProvider[0];
   }
 
   /**
@@ -44,4 +47,18 @@ public class HjsonOptions {
    * @param value value
    */
   public void setEmitRootBraces(boolean value) { emitRootBraces=value; }
+
+  /**
+   * Returns the DSF providers.
+   *
+   * @return providers.
+   */
+  public IHjsonDsfProvider[] getDsfProviders() { return dsf.clone(); }
+
+  /**
+   * Sets the DSF providers.
+   *
+   * @param value value
+   */
+  public void setDsfProviders(IHjsonDsfProvider[] value) { dsf=value.clone(); }
 }

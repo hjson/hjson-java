@@ -22,37 +22,34 @@
 package org.hjson;
 
 /**
- * Defines the known json types.
- * There is no null type as the primitive will be null instead of the JsonValue containing null.
+ * A interface to support Domain Specific Formats for Hjson.
  */
-public enum JsonType
+public interface IHjsonDsfProvider
 {
   /**
-   * Json value of type string.
+   * Gets the name of this DSF.
+   *
+   * @return name
    */
-  STRING,
+  public String getName();
   /**
-   * Json value of type number.
+   * Gets the description of this DSF.
+   *
+   * @return description
    */
-  NUMBER,
+  public String getDescription();
   /**
-   * Json value of type object.
+   * Tries to parse the text as a DSF value.
+   *
+   * @param text the DSF value
+   * @return JsonValue
    */
-  OBJECT,
+  public JsonValue parse(String text);
   /**
-   * Json value of type array.
+   * Stringifies DSF values.
+   *
+   * @param value the JSON value
+   * @return string
    */
-  ARRAY,
-  /**
-   * Json value of type boolean.
-   */
-  BOOLEAN,
-  /**
-   * Json value of type null.
-   */
-  NULL,
-  /**
-   * Json value of type DSF.
-   */
-  DSF,
+  public String stringify(JsonValue value);
 }

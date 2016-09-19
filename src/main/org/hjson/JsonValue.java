@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2013, 2015 EclipseSource.
- * Copyright (c) 2015 Christian Zangl
+ * Copyright (c) 2015-2016 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,7 +115,7 @@ public abstract class JsonValue implements Serializable {
    * @throws ParseException if the input is not valid Hjson
    */
   public static JsonValue readHjson(Reader reader) throws IOException {
-    return new HjsonParser(reader).parse();
+    return new HjsonParser(reader, null).parse();
   }
 
   /**
@@ -127,13 +127,47 @@ public abstract class JsonValue implements Serializable {
    */
   public static JsonValue readHjson(String text) {
     try {
-      return new HjsonParser(text).parse();
+      return new HjsonParser(text, null).parse();
     } catch(IOException exception) {
       // JsonParser does not throw IOException for String
       throw new RuntimeException(exception);
     }
   }
 
+  /**
+   * Reads a Hjson value from the given reader.
+   * <p>
+   * Characters are read in chunks and buffered internally, therefore wrapping an existing reader in
+   * an additional <code>BufferedReader</code> does <strong>not</strong> improve reading
+   * performance.
+   * </p>
+   *
+   * @param reader the reader to read the Hjson value from
+   * @param options the Hjson options
+   * @return the Hjson value that has been read
+   * @throws IOException if an I/O error occurs in the reader
+   * @throws ParseException if the input is not valid Hjson
+   */
+  public static JsonValue readHjson(Reader reader, HjsonOptions options) throws IOException {
+    return new HjsonParser(reader, options).parse();
+  }
+
+  /**
+   * Reads a Hjson value from the given string.
+   *
+   * @param text the string that contains the Hjson value
+   * @param options the Hjson options
+   * @return the Hjson value that has been read
+   * @throws ParseException if the input is not valid Hjson
+   */
+  public static JsonValue readHjson(String text, HjsonOptions options) {
+    try {
+      return new HjsonParser(text, options).parse();
+    } catch(IOException exception) {
+      // JsonParser does not throw IOException for String
+      throw new RuntimeException(exception);
+    }
+  }
   /**
    * Reads a JSON value from the given reader.
    * <p>
@@ -225,6 +259,16 @@ public abstract class JsonValue implements Serializable {
    */
   public static JsonValue valueOf(boolean value) {
     return value ? TRUE : FALSE;
+  }
+
+  /**
+   * Returns a JsonValue instance that represents the given DSF value.
+   *
+   * @param value the value to get a JSON representation for
+   * @return a JSON value that represents the given value
+   */
+  public static JsonValue valueOfDsf(Object value) {
+    return new JsonDsf(value);
   }
 
 
@@ -418,6 +462,16 @@ public abstract class JsonValue implements Serializable {
     throw new UnsupportedOperationException("Not a boolean: "+toString());
   }
 
+  /**
+   * Returns this JSON value as a DSF object, assuming that this value represents a DSF. If this
+   * is not the case, an exception is thrown.
+   *
+   * @return the object represented by this value
+   * @throws UnsupportedOperationException if this value is not a DSF
+   */
+  public Object asDsf() {
+    throw new UnsupportedOperationException("Not a DSF");
+  }
   /**
    * Writes the JSON representation of this value to the given writer in its minimal form, without
    * any additional whitespace.

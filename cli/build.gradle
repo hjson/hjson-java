@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'application'
 
-version = '2.0.5'
+version = '2.1.0'
 group = 'org.hjson.cli'
 description = """Hjson CLI"""
 

@@ -1,5 +1,4 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 EclipseSource.
  * Copyright (c) 2015-2016 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,81 +21,32 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.io.IOException;
-
-
 @SuppressWarnings("serial") // use default serial UID
-class JsonLiteral extends JsonValue {
+class JsonDsf extends JsonValue {
 
-  enum Iv { T, F, N };
+  private final Object value;
 
-  static final JsonValue NULL=new JsonLiteral(Iv.N);
-  static final JsonValue TRUE=new JsonLiteral(Iv.T);
-  static final JsonValue FALSE=new JsonLiteral(Iv.F);
-
-  private final Iv value;
-
-  private JsonLiteral(Iv value) {
+  JsonDsf(Object value) {
     this.value=value;
   }
 
   @Override
   public String toString() {
-    switch (value) {
-      case T: return "true";
-      case F: return "false";
-      case N: return "null";
-      default: return null;
-    }
+    return "null";
+  }
+
+  @Override
+  public JsonType getType() {
+    return JsonType.DSF;
+  }
+
+  @Override
+  public Object asDsf() {
+    return value;
   }
 
   @Override
   public int hashCode() {
     return value.hashCode();
-  }
-
-  @Override
-  public JsonType getType() {
-    return value==Iv.N ? JsonType.NULL : JsonType.BOOLEAN;
-  }
-
-  @Override
-  public boolean isNull() {
-    return value==Iv.N;
-  }
-
-  @Override
-  public boolean isTrue() {
-    return value==Iv.T;
-  }
-
-  @Override
-  public boolean isFalse() {
-    return value==Iv.F;
-  }
-
-  @Override
-  public boolean isBoolean() {
-    return value!=Iv.N;
-  }
-
-  @Override
-  public boolean asBoolean() {
-    return value==Iv.N ? super.asBoolean() : value==Iv.T;
-  }
-
-  @Override
-  public boolean equals(Object object) {
-    if (this==object) {
-      return true;
-    }
-    if (object==null) {
-      return false;
-    }
-    if (getClass()!=object.getClass()) {
-      return false;
-    }
-    JsonLiteral other=(JsonLiteral)object;
-    return value==other.value;
   }
 }

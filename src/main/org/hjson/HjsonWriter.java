@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Christian Zangl
+ * Copyright (c) 2015-2016 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,19 @@ import java.util.regex.Pattern;
 
 class HjsonWriter {
 
-  boolean emitRootBraces;
+  private boolean emitRootBraces;
+  private IHjsonDsfProvider[] dsfProviders;
+
   static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"]|//|/\\*|'''");
 
   public HjsonWriter(HjsonOptions options) {
-    if (options!=null) emitRootBraces=options.emitRootBraces;
-    else emitRootBraces=true;
+    if (options!=null) {
+      emitRootBraces=options.getEmitRootBraces();
+      dsfProviders=options.getDsfProviders();
+    } else {
+      emitRootBraces=true;
+      dsfProviders=new IHjsonDsfProvider[0];
+    }
   }
 
   void nl(Writer tw, int level) throws IOException {
@@ -47,6 +54,16 @@ class HjsonWriter {
       tw.write("null");
       return;
     }
+
+    // check for DSF
+    String dsfValue=HjsonDsf.stringify(dsfProviders, value);
+    if (dsfValue!=null)
+    {
+      tw.write(separator);
+      tw.write(dsfValue);
+      return;
+    }
+
     switch (value.getType()) {
       case OBJECT:
         JsonObject obj=value.asObject();

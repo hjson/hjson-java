@@ -1,5 +1,7 @@
 # hjson-java History
 
+- v2.1.0
+  - add DSF (domain specific formats), experimental
 - v2.0.5
   - fix stringify for strings staring with a punctuator char
 - v2.0.1
