@@ -2,3 +2,23 @@ language: java
 jdk:
 - oraclejdk8
 - oraclejdk7
+env:
+  global:
+    secure:
+script:
+- gradle build
+before_deploy:
+- cd cli
+- gradle zip
+- mv build/zip/hjson.zip build/zip/hjson-${TRAVIS_TAG}.zip
+- cd ..
+deploy:
+  provider: releases
+  file: cli/build/zip/hjson-${TRAVIS_TAG}.zip
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true
+    jdk: oraclejdk8
+  api-key:
+    secure: WB5LNxdwTPB1qn1/CKW9LkJ5R+LrXOK76vf5JdQsoYqGiu6YsxzDE4sedfJQvUOjl4lhlZkmGVeMjKXKyFIxcCwkfu5cRm8XqutoaRNc8s6ynHhkzhX2GNCTvZoUvF3Idvud6lacHSLn46buDlytOFMC7WzUWNvqrVZkP+XCkYo=
