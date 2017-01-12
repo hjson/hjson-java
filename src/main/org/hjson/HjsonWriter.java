@@ -144,13 +144,16 @@ class HjsonWriter {
       // format or we must replace the offending characters with safe escape
       // sequences.
 
-      boolean test=false;
-      for(char ch : valuec) { if (needsEscape(ch)) { test=true; break; } }
-      if (!test) { tw.write(separator+"\""+value+"\""); return; }
+      boolean noEscape=true;
+      for(char ch : valuec) { if (needsEscape(ch)) { noEscape=false; break; } }
+      if (noEscape) { tw.write(separator+"\""+value+"\""); return; }
 
-      test=false;
-      for(char ch : valuec) { if (needsEscapeML(ch)) { test=true; break; } }
-      if (!test && !value.contains("'''")) writeMLString(value, tw, level, separator);
+      boolean noEscapeML=true, allWhite=true;
+      for(char ch : valuec) {
+        if (needsEscapeML(ch)) { noEscapeML=false; break; }
+        else if (!HjsonParser.isWhiteSpace(ch)) allWhite=false;
+      }
+      if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level, separator);
       else tw.write(separator+"\""+JsonWriter.escapeString(value)+"\"");
     }
     else tw.write(separator+value);
@@ -216,6 +219,7 @@ class HjsonWriter {
     switch (c) {
       case '\n':
       case '\r':
+      case '\t':
         return false;
       default:
         return needsQuotes(c);

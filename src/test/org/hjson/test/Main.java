@@ -85,6 +85,7 @@ public class Main {
     boolean allOK=true;
 
     for (String file : testNames) {
+      if (file.contains("/")) continue; // skip for now
       int extIdx=file.lastIndexOf('.');
       String name=file.substring(0, extIdx);
       name=name.substring(0, name.length()-5);
