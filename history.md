@@ -1,5 +1,7 @@
 # hjson-java History
 
+- v2.1.1
+  - Update ML stringify to match JS
 - v2.1.0
   - add DSF (domain specific formats), experimental
 - v2.0.5
