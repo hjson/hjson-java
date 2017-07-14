@@ -36,7 +36,10 @@ public class Main {
     String text=load(file, inputCr);
 
     try {
-      JsonValue data=JsonValue.readHjson(text);
+      HjsonOptions opt=new HjsonOptions();
+      opt.setParseLegacyRoot(false);
+
+      JsonValue data=JsonValue.readHjson(text, opt);
       String data1=data.toString(Stringify.FORMATTED);
       String hjson1=data.toString(Stringify.HJSON);
       if (!shouldFail) {
@@ -47,7 +50,7 @@ public class Main {
         if (!hjson1.equals(hjson2)) return failErr(name, "stringify", hjson1, hjson2);
 
         if (isJson) {
-          String json1=data.toString(), json2=JsonValue.readHjson(text).toString();
+          String json1=data.toString(), json2=JsonValue.readHjson(text, opt).toString();
           if (!json1.equals(json2)) return failErr(name, "json chk", json1, json2);
         }
       }

@@ -37,14 +37,20 @@ class HjsonParser {
   private int current;
   private StringBuilder captureBuffer, peek;
   private boolean capture;
+  private boolean legacyRoot;
 
   private IHjsonDsfProvider[] dsfProviders;
 
   HjsonParser(String string, HjsonOptions options) {
     buffer=string;
     reset();
-    if (options!=null) dsfProviders=options.getDsfProviders();
-    else dsfProviders=new IHjsonDsfProvider[0];
+    if (options!=null) {
+      dsfProviders=options.getDsfProviders();
+      legacyRoot=options.getParseLegacyRoot();
+    } else {
+      dsfProviders=new IHjsonDsfProvider[0];
+      legacyRoot=true;
+    }
   }
 
   HjsonParser(Reader reader, HjsonOptions options) throws IOException {
@@ -75,23 +81,27 @@ class HjsonParser {
     read();
     skipWhiteSpace();
 
-    switch (current) {
-      case '[':
-      case '{':
-        return checkTrailing(readValue());
-      default:
-        try {
-          // assume we have a root object without braces
-          return checkTrailing(readObject(true));
-        } catch (Exception exception) {
-          // test if we are dealing with a single JSON value instead (true/false/null/num/"")
-          reset();
-          read();
-          skipWhiteSpace();
-          try { return checkTrailing(readValue()); }
-          catch (Exception exception2) { }
-          throw exception; // throw original error
-        }
+    if (legacyRoot) {
+      switch (current) {
+        case '[':
+        case '{':
+          return checkTrailing(readValue());
+        default:
+          try {
+            // assume we have a root object without braces
+            return checkTrailing(readObject(true));
+          } catch (Exception exception) {
+            // test if we are dealing with a single JSON value instead (true/false/null/num/"")
+            reset();
+            read();
+            skipWhiteSpace();
+            try { return checkTrailing(readValue()); }
+            catch (Exception exception2) { }
+            throw exception; // throw original error
+          }
+      }
+    } else {
+      return checkTrailing(readValue());
     }
   }
 
