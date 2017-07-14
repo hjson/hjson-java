@@ -71,6 +71,7 @@ pass3_test.json
 pass4_test.json
 passSingle_test.hjson
 stringify1_test.hjson
+strings2_test.hjson
 strings_test.hjson
 trail_test.hjson
 stringify/quotes_all_test.hjson

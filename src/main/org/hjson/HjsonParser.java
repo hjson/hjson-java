@@ -113,6 +113,7 @@ class HjsonParser {
 
   private JsonValue readValue() throws IOException {
     switch(current) {
+      case '\'':
       case '"': return readString();
       case '[': return readArray();
       case '{': return readObject(false);
@@ -130,7 +131,6 @@ class HjsonParser {
     value.append((char)current);
     for (;;) {
       read();
-      if (first=='\'' && value.length()==3 && value.toString().equals("'''")) return readMlString();
       boolean isEol=current<0 || current=='\r' || current=='\n';
       if (isEol || current==',' ||
         current=='}' || current==']' ||
@@ -204,7 +204,7 @@ class HjsonParser {
   }
 
   private String readName() throws IOException {
-    if (current=='"') return readStringInternal();
+    if (current=='"' || current=='\'') return readStringInternal(false);
 
     StringBuilder name=new StringBuilder();
     int space=-1, start=index;
@@ -224,7 +224,7 @@ class HjsonParser {
     }
   }
 
-  private JsonValue readMlString() throws IOException {
+  private String readMlString() throws IOException {
 
     // Parse a multiline string value.
     StringBuilder sb=new StringBuilder();
@@ -249,7 +249,7 @@ class HjsonParser {
         if (triple==3) {
           if (sb.charAt(sb.length()-1)=='\n') sb.deleteCharAt(sb.length()-1);
 
-          return new JsonString(sb.toString());
+          return sb.toString();
         }
         else continue;
       }
@@ -279,20 +279,27 @@ class HjsonParser {
   }
 
   private JsonValue readString() throws IOException {
-    return new JsonString(readStringInternal());
+    return new JsonString(readStringInternal(true));
   }
 
-  private String readStringInternal() throws IOException {
+  private String readStringInternal(boolean allowML) throws IOException {
+    // callees make sure that (current=='"' || current=='\'')
+    int exitCh = current;
     read();
     startCapture();
-    while (current!='"') {
+    while (current!=exitCh) {
       if (current=='\\') readEscape();
       else if (current<0x20) throw expected("valid string character");
       else read();
     }
     String string=endCapture();
     read();
-    return string;
+
+    if (allowML && current=='\'' && string.length()==0) {
+      // ''' indicates a multiline string
+      read();
+      return readMlString();
+    } else return string;
   }
 
   private void readEscape() throws IOException {
@@ -300,6 +307,7 @@ class HjsonParser {
     read();
     switch(current) {
       case '"':
+      case '\'':
       case '/':
       case '\\':
         captureBuffer.append((char)current);

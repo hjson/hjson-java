@@ -30,7 +30,7 @@ class HjsonWriter {
 
   private IHjsonDsfProvider[] dsfProviders;
 
-  static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"]|//|/\\*|'''");
+  static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"']|//|/\\*|'''");
 
   public HjsonWriter(HjsonOptions options) {
     if (options!=null) {
@@ -124,7 +124,7 @@ class HjsonWriter {
     if (doEscape ||
       HjsonParser.isWhiteSpace(left) || HjsonParser.isWhiteSpace(right) ||
       left=='"' ||
-      left=='\'' && left1=='\'' && left2=='\'' ||
+      left=='\'' ||
       left=='#' ||
       left=='/' && (left1=='*' || left1=='/') ||
       JsonValue.isPunctuatorChar(left) ||

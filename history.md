@@ -1,5 +1,9 @@
 # hjson-java History
 
+- v3.0.0
+  - add support for single quoted strings
+  - add option to turn off legacy support for omitting root braces
+  - HjsonWriter will always emit root braces
 - v2.1.1
   - Update ML stringify to match JS
 - v2.1.0
