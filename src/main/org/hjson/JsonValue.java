@@ -501,7 +501,7 @@ public abstract class JsonValue implements Serializable {
     switch (format) {
       case PLAIN: new JsonWriter(false).save(this, buffer, 0); break;
       case FORMATTED: new JsonWriter(true).save(this, buffer, 0); break;
-      case HJSON: new HjsonWriter(null).save(this, buffer, 0, "", true, true); break;
+      case HJSON: new HjsonWriter(null).save(this, buffer, 0, "", true); break;
     }
     buffer.flush();
   }
@@ -519,7 +519,7 @@ public abstract class JsonValue implements Serializable {
   public void writeTo(Writer writer, HjsonOptions options) throws IOException {
     if (options==null) throw new NullPointerException("options is null");
     WritingBuffer buffer=new WritingBuffer(writer, 128);
-    new HjsonWriter(options).save(this, buffer, 0, "", true, true);
+    new HjsonWriter(options).save(this, buffer, 0, "", true);
     buffer.flush();
   }
 

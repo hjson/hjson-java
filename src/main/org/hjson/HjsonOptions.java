@@ -26,27 +26,29 @@ package org.hjson;
  */
 public class HjsonOptions {
 
-  private boolean emitRootBraces;
   private IHjsonDsfProvider[] dsf;
 
   public HjsonOptions() {
-    emitRootBraces = true; // default
     dsf=new IHjsonDsfProvider[0];
   }
 
   /**
    * Detects whether root braces should be emitted.
    *
+   * @deprecated will always return true.
    * @return <code>true</code> if this feature is enabled.
    */
-  public boolean getEmitRootBraces() { return emitRootBraces; }
+  @Deprecated
+  public boolean getEmitRootBraces() { return true; }
 
   /**
    * Sets whether root braces should be emitted.
    *
+   * @deprecated root braces are always emitted.
    * @param value value
    */
-  public void setEmitRootBraces(boolean value) { emitRootBraces=value; }
+  @Deprecated
+  public void setEmitRootBraces(boolean value) { }
 
   /**
    * Returns the DSF providers.
