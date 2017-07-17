@@ -295,7 +295,7 @@ class HjsonParser {
     String string=endCapture();
     read();
 
-    if (allowML && current=='\'' && string.length()==0) {
+    if (allowML && exitCh=='\'' && current=='\'' && string.length()==0) {
       // ''' indicates a multiline string
       read();
       return readMlString();
