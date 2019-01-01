@@ -22,9 +22,7 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-
 
 @SuppressWarnings("serial") // use default serial UID
 class JsonNumber extends JsonValue {

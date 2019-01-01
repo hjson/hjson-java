@@ -28,10 +28,19 @@ public class HjsonOptions {
 
   private IHjsonDsfProvider[] dsf;
   private boolean legacyRoot;
+  private boolean nlBraces;
+  private boolean allowCompact;
+  private boolean allowMultiVal;
+  private int indent, commentIndent;
 
   public HjsonOptions() {
     dsf=new IHjsonDsfProvider[0];
     legacyRoot=true;
+    nlBraces=false;
+    allowCompact=true;
+    allowMultiVal=true;
+    indent=2;
+    commentIndent=0;
   }
 
   /**
@@ -46,7 +55,7 @@ public class HjsonOptions {
    *
    * @param value value
    */
-  public void setDsfProviders(IHjsonDsfProvider[] value) { dsf=value.clone(); }
+  public HjsonOptions setDsfProviders(IHjsonDsfProvider... value) { dsf=value.clone(); return this; }
 
   /**
    * Detects whether objects without root braces are supported.
@@ -60,7 +69,7 @@ public class HjsonOptions {
    *
    * @param value value
    */
-  public void setParseLegacyRoot(boolean value) { legacyRoot=value; }
+  public HjsonOptions setParseLegacyRoot(boolean value) { legacyRoot=value; return this; }
 
   /**
    * Detects whether root braces should be emitted.
@@ -78,6 +87,76 @@ public class HjsonOptions {
    * @param value value
    */
   @Deprecated
-  public void setEmitRootBraces(boolean value) { }
+  public HjsonOptions setEmitRootBraces(boolean value) { return this; }
+
+  /**
+   * Detects whether braces and brackets should be placed on new lines.
+   *
+   * @return whether braces and brackets follow the K&R / Java syntax.
+   */
+  public boolean useNlBraces() { return nlBraces; }
+
+  /**
+   * Sets whether braces and brackets should be placed on new lines.
+   *
+   * @param value value
+   */
+  public HjsonOptions setNlBraces(boolean value) { nlBraces=value; return this; }
+
+  /**
+   * Detects whether more than one value is ever allowed on a single line.
+   *
+   * @return <code>true</code> if more than one value is allowed.
+   */
+  public boolean allowMultiVal() { return allowMultiVal; }
+
+  /**
+   * Sets whether more than one value is ever allowed to be placed on a single line.
+   *
+   * @param value value
+   */
+  public HjsonOptions setAllowMultiVal(boolean value) { allowMultiVal=value; return this; }
+
+  /**
+   * Detects whether objects an arrays are allowed to be displayed on a single line.
+   *
+   * @return <code>true</code> if objects and arrays can be displayed on a single line.
+   */
+  public boolean allowCompact() { return allowCompact; }
+
+  /**
+   * Sets whether objects and arrays can be displayed on a single line.
+   *
+   * @param value value
+   */
+  public HjsonOptions setAllowCompact(boolean value) { allowCompact=value; return this; }
+
+  /**
+   * Gets the number of spaces to be placed per-level on each new line.
+   *
+   * @return the number of spaces.
+   */
+  public int getIndent() { return indent; }
+
+  /**
+   * Sets the number of spaces to be placed per-level on each new line.
+   *
+   * @param value value
+   */
+  public HjsonOptions setIndent(int value) { indent=value; return this; }
+
+  /**
+   * Gets the number of spaces to be placed before comments on new lines.
+   *
+   * @return the number of spaces.
+   */
+  public int getCommentIndent() { return commentIndent; }
+
+  /**
+   * Sets the number of spaces to be placed before comments on new lines.
+   *
+   * @param value value
+   */
+  public HjsonOptions setCommentIndent(int value) { commentIndent=value; return this; }
 
 }

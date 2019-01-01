@@ -22,7 +22,6 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
@@ -80,6 +79,11 @@ public abstract class JsonValue implements Serializable {
   public static final JsonValue NULL=JsonLiteral.NULL;
 
   static String eol=System.getProperty("line.separator");
+
+  /**
+   * Comments that will be used by each type of value.
+   */
+  protected String bolComment="", eolComment="", intComment="";
 
   /**
    * Gets the newline charater(s).
@@ -271,7 +275,6 @@ public abstract class JsonValue implements Serializable {
     return new JsonDsf(value);
   }
 
-
   /**
    * Gets the type of this JSON value.
    *
@@ -352,6 +355,131 @@ public abstract class JsonValue implements Serializable {
    */
   public boolean isNull() {
     return false;
+  }
+
+  /**
+   * Detects whether this value contains any comments.
+   *
+   * @return <code>true</code> if this value does contain comments.
+   */
+  public boolean hasComments() {
+    return hasBOLComment() || hasEOLComment() || hasInteriorComment();
+  }
+
+  /**
+   * Detects whether this value contains any beginning of line comments.
+   *
+   * @return <code>true</code> if this value does contain any BOL comments.
+   */
+  public boolean hasBOLComment() { return !bolComment.isEmpty(); }
+
+  /**
+   * Detects whether this value contains any end of line comments.
+   *
+   * @return <code>true</code> if this value does contain any EOL comments.
+   */
+  public boolean hasEOLComment() { return !eolComment.isEmpty(); }
+
+  /**
+   * Detects whether this value contains any interior comments, which may be present inside of
+   * object and array types with no association to any of their members.
+   *
+   * @return <code>true</code> if this value does contain any interior comments.
+   */
+  public boolean hasInteriorComment() { return !intComment.isEmpty(); }
+
+  /**
+   * Gets any comment that exists before this value.
+   *
+   * @return The full contents of this comment, including any comment indicators.
+   */
+  public String getBOLComment() { return bolComment; }
+
+  /**
+   * Gets any comment that exists after this value.
+   *
+   * @return The full contents of this comment, including any comment indicators.
+   */
+  public String getEOLComment() { return eolComment; }
+
+  /**
+   * Gets any non-BOL or EOL comment contained within this value.
+   *
+   * @return The full contents of this comment, including any comment indicators.
+   */
+  public String getInteriorComment() { return intComment; }
+
+  /**
+   * Adds a comment to be associated with this value.
+   * @param type Whether to place this comment before the line, after the line, or inside of the
+   *             object or array, if applicable.
+   * @param style Whether to use <code>#<code/>, <code>//</code>, or another such comment style.
+//   * @param indent The number of spaces to indent before each line.
+   * @param comment The unformatted comment to be paired with this value.
+   */
+  public JsonValue setComment(CommentType type, CommentStyle style, String comment) {
+    StringBuilder formatted=new StringBuilder();
+    if (style.equals(CommentStyle.BLOCK)){
+      formatted.append("/*");
+      formatted.append(eol);
+      formatted.append(comment);
+      formatted.append(eol);
+      formatted.append("*/");
+    } else {
+      String[] lines=comment.split("\r?\n");
+      // Iterate through all lines in the comment.
+      for (int i=0; i<lines.length; i++) {
+        // Don't concatenate lines.
+        if (i>0) formatted.append(eol);
+        // Add the indicator and extra space.
+        if (style.equals(CommentStyle.HASH)){
+          formatted.append("# ");
+        } else {
+          formatted.append("// ");
+        }
+        // Add the actual line from the comment.
+        formatted.append(lines[i]);
+      }
+    }
+    setFullComment(type, formatted.toString());
+    return this;
+  }
+
+  /**
+   * Shorthand for {@link #setComment(CommentType, CommentStyle, String)} which defaults to sending
+   * a beginning of line, single line comment, using the default indicator, <code>#</code>.
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   */
+  public JsonValue setComment(String comment) {
+    return setComment(CommentType.BOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Shorthand for calling {@link #setComment(CommentType, CommentStyle, String)} which defaults to
+   * sending an end of line, single line comment, using the default indicator, <code>#</code>.
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   */
+  public JsonValue setEOLComment(String comment) {
+    return setComment(CommentType.EOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Counterpart to {@link #setComment(CommentType, CommentStyle, String)} which receives
+   * the full, formatted comment to be stored by this value.
+   *
+   * @param type Whether to place this comment before the line, after the line, or inside of the
+   *             object or array, if applicable.
+   * @param comment The fully-formatted comment to be paired with this value.
+   */
+  public JsonValue setFullComment(CommentType type, String comment) {
+    switch (type) {
+      case BOL: bolComment=comment; break;
+      case EOL: eolComment=comment; break;
+      case INTERIOR: intComment=comment; break;
+    }
+    return this;
   }
 
   /**
