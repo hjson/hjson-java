@@ -414,7 +414,6 @@ public abstract class JsonValue implements Serializable {
    * @param type Whether to place this comment before the line, after the line, or inside of the
    *             object or array, if applicable.
    * @param style Whether to use <code>#<code/>, <code>//</code>, or another such comment style.
-//   * @param indent The number of spaces to indent before each line.
    * @param comment The unformatted comment to be paired with this value.
    */
   public JsonValue setComment(CommentType type, CommentStyle style, String comment) {

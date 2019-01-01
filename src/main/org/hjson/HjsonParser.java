@@ -464,7 +464,6 @@ class HjsonParser {
       default:
         throw expected("valid escape sequence");
     }
-//    capture=CaptureState.CAPTURE;
     capture=true;
     read();
   }
