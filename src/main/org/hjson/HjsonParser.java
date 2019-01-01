@@ -100,7 +100,7 @@ class HjsonParser {
             // test if we are dealing with a single JSON value instead (true/false/null/num/"")
             reset();
             read();
-            System.out.println("101: " + readBetweenVals());
+            readBetweenVals();
             try { return checkTrailing(readValue()); }
             catch (Exception exception2) { }
             // throw original error
