@@ -64,7 +64,7 @@ import java.util.List;
 public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   private final List<JsonValue> values;
-  private transient boolean compact;
+  private transient boolean condensed;
   private transient int lineLength;
 
   /**
@@ -72,7 +72,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    */
   public JsonArray() {
     values=new ArrayList<JsonValue>();
-    compact=false;
+    condensed=false;
     lineLength=1;
   }
 
@@ -95,7 +95,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
     } else {
       values=new ArrayList<JsonValue>(array.values);
     }
-    compact=array.compact;
+    condensed=array.condensed;
     lineLength=array.lineLength;
   }
 
@@ -679,21 +679,21 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   public JsonArray setLineLength(int value) { lineLength=value; return this; }
 
   /**
-   * Detects whether this array is "compact" i.e. whether it should be displayed entirely on
+   * Detects whether this array is "condensed" i.e. whether it should be displayed entirely on
    * one line.
    *
-   * @return whether this array is compact.
+   * @return whether this array is condensed.
    */
-  public boolean isCompact() { return compact; }
+  public boolean isCondensed() { return condensed; }
 
   /**
-   * Sets whether this array should be "compact," i.e. whether it should be displayed entirely on
+   * Sets whether this array should be "condensed," i.e. whether it should be displayed entirely on
    * one line.
    *
    * @param value
-   *           whether this array should be compact.
+   *           whether this array should be condensed.
    */
-  public JsonArray setCompact(boolean value) { compact=value; return this; }
+  public JsonArray setCondensed(boolean value) { condensed=value; return this; }
 
   /**
    * Returns an iterator over the values of this array in document order. The returned iterator

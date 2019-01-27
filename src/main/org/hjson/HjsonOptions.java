@@ -28,19 +28,19 @@ public class HjsonOptions {
 
   private IHjsonDsfProvider[] dsf;
   private boolean legacyRoot;
-  private boolean nlBraces;
-  private boolean allowCompact;
+  private boolean bracesSameLine;
+  private boolean allowCondense;
   private boolean allowMultiVal;
-  private int indent, commentIndent;
+  private String space, commentSpace;
 
   public HjsonOptions() {
     dsf=new IHjsonDsfProvider[0];
     legacyRoot=true;
-    nlBraces=false;
-    allowCompact=true;
+    bracesSameLine=true;
+    allowCondense=true;
     allowMultiVal=true;
-    indent=2;
-    commentIndent=0;
+    space="  ";
+    commentSpace="";
   }
 
   /**
@@ -94,21 +94,21 @@ public class HjsonOptions {
    *
    * @return whether braces and brackets follow the K&R / Java syntax.
    */
-  public boolean useNlBraces() { return nlBraces; }
+  public boolean bracesSameLine() { return bracesSameLine; }
 
   /**
    * Sets whether braces and brackets should be placed on new lines.
    *
    * @param value value
    */
-  public HjsonOptions setNlBraces(boolean value) { nlBraces=value; return this; }
+  public HjsonOptions setBracesSameLine(boolean value) { bracesSameLine=value; return this; }
 
   /**
    * Detects whether more than one value is ever allowed on a single line.
    *
    * @return <code>true</code> if more than one value is allowed.
    */
-  public boolean allowMultiVal() { return allowMultiVal; }
+  public boolean getAllowMultiVal() { return allowMultiVal; }
 
   /**
    * Sets whether more than one value is ever allowed to be placed on a single line.
@@ -122,41 +122,66 @@ public class HjsonOptions {
    *
    * @return <code>true</code> if objects and arrays can be displayed on a single line.
    */
-  public boolean allowCompact() { return allowCompact; }
+  public boolean getAllowCondense() { return allowCondense; }
 
   /**
    * Sets whether objects and arrays can be displayed on a single line.
    *
    * @param value value
    */
-  public HjsonOptions setAllowCompact(boolean value) { allowCompact=value; return this; }
+  public HjsonOptions setAllowCondense(boolean value) { allowCondense=value; return this; }
 
   /**
-   * Gets the number of spaces to be placed per-level on each new line.
+   * Gets the characters to be placed per-level on each new line.
    *
    * @return the number of spaces.
    */
-  public int getIndent() { return indent; }
+  public String getSpace() { return space; }
+
+  /**
+   * Sets the characters to be placed per-level on each new line.
+   *
+   * @param value value
+   */
+  public HjsonOptions setSpace(String value) { space=value; return this; }
 
   /**
    * Sets the number of spaces to be placed per-level on each new line.
    *
    * @param value value
    */
-  public HjsonOptions setIndent(int value) { indent=value; return this; }
+  public HjsonOptions setSpace(int value) { space=numSpaces(value); return this; }
 
   /**
-   * Gets the number of spaces to be placed before comments on new lines.
+   * Gets the characters to be placed before comments on new lines.
    *
    * @return the number of spaces.
    */
-  public int getCommentIndent() { return commentIndent; }
+  public String getCommentSpace() { return commentSpace; }
+
+  /**
+   * Sets the characters to be placed before comments on new lines.
+   *
+   * @param value value
+   */
+  public HjsonOptions setCommentSpace(String value) { commentSpace=value; return this; }
 
   /**
    * Sets the number of spaces to be placed before comments on new lines.
    *
    * @param value value
    */
-  public HjsonOptions setCommentIndent(int value) { commentIndent=value; return this; }
+  public HjsonOptions setCommentSpace(int value) { commentSpace=numSpaces(value); return this; }
 
+  /**
+   * Generates a String object based on the input number of spaces.
+   *
+   * @param value value
+   * @return a string containing the input number of spaces.
+   */
+  private String numSpaces(int value) {
+    StringBuilder sb = new StringBuilder();
+    for (int i=0; i<value; i++) { sb.append(' '); }
+    return sb.toString();
+  }
 }

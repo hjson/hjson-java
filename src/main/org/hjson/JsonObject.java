@@ -24,10 +24,7 @@ package org.hjson;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.hjson.JsonObject.Member;
 
@@ -75,7 +72,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   private final List<String> names;
   private final List<JsonValue> values;
   private transient HashIndexTable table;
-  private transient boolean compact;
+  private transient boolean condensed;
   private transient int lineLength;
 
   /**
@@ -85,7 +82,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     names=new ArrayList<String>();
     values=new ArrayList<JsonValue>();
     table=new HashIndexTable();
-    compact=false;
+    condensed=false;
     lineLength=1;
   }
 
@@ -109,7 +106,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
       values=new ArrayList<JsonValue>(object.values);
     }
     table=new HashIndexTable();
-    compact=object.compact;
+    condensed=object.condensed;
     lineLength=object.lineLength;
     updateHashIndex();
   }
@@ -805,21 +802,21 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   public JsonObject setLineLength(int value) { lineLength=value; return this; }
 
   /**
-   * Detects whether this object is "compact" i.e. whether it should be displayed entirely on
+   * Detects whether this object is "condensed" i.e. whether it should be displayed entirely on
    * one line.
    *
-   * @return whether this object is compact.
+   * @return whether this object is condensed.
    */
-  public boolean isCompact() { return compact; }
+  public boolean isCondensed() { return condensed; }
 
   /**
-   * Sets whether this object should be "compact," i.e. whether it should be displayed entirely on
+   * Sets whether this object should be "condensed," i.e. whether it should be displayed entirely on
    * one line.
    *
    * @param value
-   *           whether this object should be compact.
+   *           whether this object should be condensed.
    */
-  public JsonObject setCompact(boolean value) { compact=value; return this; }
+  public JsonObject setCondensed(boolean value) { condensed=value; return this; }
 
   /**
    * Sorts all members of this object according to their keys, in alphabetical order.
@@ -828,19 +825,22 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    */
   public JsonObject sort() {
     // Collect all members into an array.
-    List<Member> members=new ArrayList<>();
+    List<Member> members=new ArrayList<Member>();
     for (Member m : this) {
       members.add(m);
     }
+    // Get the underlying array so it can be sorted.
+    Member[] membersArray=members.toArray(new Member[members.size()]);
+
     // Sort the new array.
-    members.sort((m1, m2) -> m1.name.compareToIgnoreCase(m2.name));
+    Arrays.sort(membersArray, new MemberComparator());
 
     // Clear the original values.
     names.clear();
     values.clear();
 
     // Re-add the values, now in order.
-    for (Member m : members) {
+    for (Member m : membersArray) {
       add(m.name, m.value);
     }
 
@@ -1031,6 +1031,13 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
     private int hashSlotfor (Object element) {
       return element.hashCode() & hashTable.length-1;
+    }
+  }
+
+  public static class MemberComparator implements Comparator<Member> {
+    @Override
+    public int compare(Member m1, Member m2) {
+      return m1.name.compareToIgnoreCase(m2.name);
     }
   }
 }

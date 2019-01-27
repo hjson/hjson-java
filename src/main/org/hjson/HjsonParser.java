@@ -172,7 +172,7 @@ class HjsonParser {
     read();
     JsonArray array=new JsonArray();
     boolean compact=isContainerCompact();
-    array.setCompact(compact);
+    array.setCondensed(compact);
     int sumLineLength=0;
     int lineLength=1;
     int numLines=0;
@@ -238,7 +238,7 @@ class HjsonParser {
     // Skip the opening brace.
     if (!objectWithoutBraces) read();
     JsonObject object=new JsonObject();
-    object.setCompact(isContainerCompact());
+    object.setCondensed(isContainerCompact());
     int sumLineLength=1;
     int lineLength=1;
     int numLines=0;
@@ -534,11 +534,10 @@ class HjsonParser {
   }
 
   private String readBetweenVals(boolean toEOL) throws IOException {
-    int indent=0;
     startCapture();
     while (!isEndOfText()) {
       pauseCapture();
-      indent=skipWhiteSpace();
+      int indent=skipWhiteSpace();
       startCapture();
       if (current=='#' || current=='/' && peek()=='/') {
         do {
@@ -553,7 +552,9 @@ class HjsonParser {
           read();
           if (current=='\n') {
             read();
-            skip(indent-1);
+            // Make sure that we still only skip whitespace.
+            // Spacing may be different on each line.
+            skipIfWhiteSpace(indent-1);
           }
         } while (current>=0 && !(current=='*' && peek()=='/'));
         read(); read();
@@ -620,6 +621,12 @@ class HjsonParser {
   private void skip(int num) throws IOException {
     pauseCapture();
     for (int i=0; i<num; i++) read();
+    startCapture();
+  }
+
+  private void skipIfWhiteSpace(int num) throws IOException {
+    pauseCapture();
+    for (int i=0; i<num; i++) if (isWhiteSpace()) read();
     startCapture();
   }
 
