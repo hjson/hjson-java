@@ -675,6 +675,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *
    * @param value
    *           the number of elements to be displayed per-line.
+   * @return this, to enable chaining
    */
   public JsonArray setLineLength(int value) { lineLength=value; return this; }
 
@@ -692,6 +693,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *
    * @param value
    *           whether this array should be condensed.
+   * @return this, to enable chaining
    */
   public JsonArray setCondensed(boolean value) { condensed=value; return this; }
 

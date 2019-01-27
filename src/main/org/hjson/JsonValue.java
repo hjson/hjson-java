@@ -413,8 +413,9 @@ public abstract class JsonValue implements Serializable {
    * Adds a comment to be associated with this value.
    * @param type Whether to place this comment before the line, after the line, or inside of the
    *             object or array, if applicable.
-   * @param style Whether to use <code>#<code/>, <code>//</code>, or another such comment style.
+   * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.
    * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
    */
   public JsonValue setComment(CommentType type, CommentStyle style, String comment) {
     StringBuilder formatted=new StringBuilder();
@@ -449,6 +450,7 @@ public abstract class JsonValue implements Serializable {
    * a beginning of line, single line comment, using the default indicator, <code>#</code>.
    *
    * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
    */
   public JsonValue setComment(String comment) {
     return setComment(CommentType.BOL, CommentStyle.HASH, comment);
@@ -459,6 +461,7 @@ public abstract class JsonValue implements Serializable {
    * sending an end of line, single line comment, using the default indicator, <code>#</code>.
    *
    * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
    */
   public JsonValue setEOLComment(String comment) {
     return setComment(CommentType.EOL, CommentStyle.HASH, comment);
@@ -471,6 +474,7 @@ public abstract class JsonValue implements Serializable {
    * @param type Whether to place this comment before the line, after the line, or inside of the
    *             object or array, if applicable.
    * @param comment The fully-formatted comment to be paired with this value.
+   * @return this, to enable chaining
    */
   public JsonValue setFullComment(CommentType type, String comment) {
     switch (type) {

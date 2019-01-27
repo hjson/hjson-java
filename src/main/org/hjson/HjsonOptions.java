@@ -54,6 +54,7 @@ public class HjsonOptions {
    * Sets the DSF providers.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setDsfProviders(IHjsonDsfProvider... value) { dsf=value.clone(); return this; }
 
@@ -68,6 +69,7 @@ public class HjsonOptions {
    * Sets whether root braces should be emitted.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setParseLegacyRoot(boolean value) { legacyRoot=value; return this; }
 
@@ -85,6 +87,7 @@ public class HjsonOptions {
    *
    * @deprecated root braces are always emitted.
    * @param value value
+   * @return this, to enable chaining
    */
   @Deprecated
   public HjsonOptions setEmitRootBraces(boolean value) { return this; }
@@ -100,6 +103,7 @@ public class HjsonOptions {
    * Sets whether braces and brackets should be placed on new lines.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setBracesSameLine(boolean value) { bracesSameLine=value; return this; }
 
@@ -114,6 +118,7 @@ public class HjsonOptions {
    * Sets whether more than one value is ever allowed to be placed on a single line.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setAllowMultiVal(boolean value) { allowMultiVal=value; return this; }
 
@@ -128,6 +133,7 @@ public class HjsonOptions {
    * Sets whether objects and arrays can be displayed on a single line.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setAllowCondense(boolean value) { allowCondense=value; return this; }
 
@@ -142,6 +148,7 @@ public class HjsonOptions {
    * Sets the characters to be placed per-level on each new line.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setSpace(String value) { space=value; return this; }
 
@@ -149,6 +156,7 @@ public class HjsonOptions {
    * Sets the number of spaces to be placed per-level on each new line.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setSpace(int value) { space=numSpaces(value); return this; }
 
@@ -163,6 +171,7 @@ public class HjsonOptions {
    * Sets the characters to be placed before comments on new lines.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setCommentSpace(String value) { commentSpace=value; return this; }
 
@@ -170,6 +179,7 @@ public class HjsonOptions {
    * Sets the number of spaces to be placed before comments on new lines.
    *
    * @param value value
+   * @return this, to enable chaining
    */
   public HjsonOptions setCommentSpace(int value) { commentSpace=numSpaces(value); return this; }
 
