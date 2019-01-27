@@ -95,7 +95,7 @@ public class HjsonOptions {
   /**
    * Detects whether braces and brackets should be placed on new lines.
    *
-   * @return whether braces and brackets follow the <em>K&R</em> / <em>Java</em> syntax.
+   * @return whether braces and brackets follow the KR / Java syntax.
    */
   public boolean bracesSameLine() { return bracesSameLine; }
 
