@@ -348,7 +348,6 @@ class HjsonParser {
   }
 
   private String readMlString() throws IOException {
-
     // Parse a multiline string value.
     StringBuilder sb=new StringBuilder();
     int triple=0;

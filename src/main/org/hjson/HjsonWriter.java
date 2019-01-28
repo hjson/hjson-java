@@ -107,9 +107,7 @@ class HjsonWriter {
         break;
       case STRING:
         tw.write(separator);
-        if (forceQuotes) tw.write('"');
-        writeString(value.asString(), tw, level, separator);
-        if (forceQuotes) tw.write('"');
+        writeString(value.asString(), tw, level, forceQuotes, separator);
         break;
       default:
         tw.write(separator);
@@ -238,7 +236,7 @@ class HjsonWriter {
       return name;
   }
 
-  void writeString(String value, Writer tw, int level, String separator) throws IOException {
+  void writeString(String value, Writer tw, int level, boolean forceQuotes, String separator) throws IOException {
     if (value.length()==0) { tw.write("\"\""); return; }
 
     char left=value.charAt(0), right=value.charAt(value.length()-1);
@@ -276,7 +274,11 @@ class HjsonWriter {
       if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level, separator);
       else tw.write("\""+JsonWriter.escapeString(value)+"\"");
     }
-    else tw.write(value);
+    else {
+      if (forceQuotes) tw.write('"');
+      tw.write(value);
+      if (forceQuotes) tw.write('"');
+    }
   }
 
   void writeMLString(String value, Writer tw, int level, String separator) throws IOException {
