@@ -632,7 +632,8 @@ public abstract class JsonValue implements Serializable {
     switch (format) {
       case PLAIN: new JsonWriter(false).save(this, buffer, 0); break;
       case FORMATTED: new JsonWriter(true).save(this, buffer, 0); break;
-      case HJSON: new HjsonWriter(null).save(this, buffer, 0, "", true); break;
+      case HJSON: new HjsonWriter(null, false).save(this, buffer, 0, "", true); break;
+      case HJSON_COMMENTS: new HjsonWriter(null, true).save(this, buffer, 0, "", true); break;
     }
     buffer.flush();
   }

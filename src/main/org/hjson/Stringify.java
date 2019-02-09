@@ -29,5 +29,7 @@ public enum Stringify {
   FORMATTED,
   /** Hjson. */
   HJSON,
+  /** Hjson w/ comments */
+  HJSON_COMMENTS,
 }
 

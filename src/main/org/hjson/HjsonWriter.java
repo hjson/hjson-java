@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 class HjsonWriter {
 
   private IHjsonDsfProvider[] dsfProviders;
+  private boolean outputComments;
   private boolean bracesSameLine;
   private boolean allowCondense;
   private boolean allowMultiVal;
@@ -43,6 +44,7 @@ class HjsonWriter {
       allowMultiVal=options.getAllowMultiVal();
       space=options.getSpace();
       commentSpace=options.getCommentSpace();
+      outputComments=options.getOutputComments();
     } else {
       dsfProviders=new IHjsonDsfProvider[0];
       bracesSameLine=true;
@@ -50,7 +52,14 @@ class HjsonWriter {
       allowMultiVal=true;
       space="  ";
       commentSpace="";
+      outputComments=false;
     }
+  }
+
+  public HjsonWriter(HjsonOptions options, boolean outputComments) {
+    this(options);
+
+    this.outputComments = outputComments;
   }
 
   void nl(Writer tw, int level) throws IOException {
@@ -88,7 +97,7 @@ class HjsonWriter {
     }
 
     // Write the header, if applicable.
-    if (level==0 && value.hasBOLComment()) {
+    if (this.outputComments && level==0 && value.hasBOLComment()) {
       writeHeader(tw, value, level);
     }
 
@@ -118,7 +127,7 @@ class HjsonWriter {
     }
 
     // Write any following comments.
-    if (value.hasEOLComment()) {
+    if (this.outputComments && value.hasEOLComment()) {
       writeEOLComment(tw, value, level);
     }
   }
@@ -129,19 +138,19 @@ class HjsonWriter {
 
     int index=0;
     for (JsonObject.Member pair : obj) {
-      if (pair.getValue().hasBOLComment()) {
+      if (this.outputComments && pair.getValue().hasBOLComment()) {
         writeBOLComment(tw, pair.getValue(), level);
       }
 
       handleContainerLines(tw, obj.isCondensed(), index, level, obj.getLineLength());
       tw.write(escapeName(pair.getName(), forceQuoteObject(obj)));
       tw.write(":");
-      boolean forceQuoteValue = forceQuoteValue(pair.getValue(), obj);
+      boolean forceQuoteValue = forceQuoteValue(pair.getValue(), obj, outputComments);
       save(pair.getValue(), tw, level+1, " ", false, forceQuoteValue);
       index++;
     }
     // Put interior comments at the bottom.
-    if (obj.hasInteriorComment()) {
+    if (this.outputComments && obj.hasInteriorComment()) {
       writeInteriorComment(tw, obj, level);
     }
     // We've reached the end of the container. Close it off.
@@ -155,16 +164,16 @@ class HjsonWriter {
     int n=arr.size();
     for (int i=0; i<n; i++) {
       JsonValue element = arr.get(i);
-      if (element.hasBOLComment()) {
+      if (this.outputComments && element.hasBOLComment()) {
         writeBOLComment(tw, element, level+1);
       }
       handleContainerLines(tw, arr.isCondensed(), i, level, arr.getLineLength());
       // Multiple strings in an array would require quotes.
-      boolean forceQuoteArray = forceQuoteArray(element, arr);
+      boolean forceQuoteArray = forceQuoteArray(element, arr, outputComments);
       save(element, tw, level+1, "", true, forceQuoteArray);
     }
     // Put the interior comments at the bottom.
-    if (arr.hasInteriorComment()) {
+    if (this.outputComments && arr.hasInteriorComment()) {
       writeInteriorComment(tw, arr, level);
     }
     // We've reached the end of the container. Close it off.
@@ -328,13 +337,13 @@ class HjsonWriter {
     return ch==',' || ch=='}' || ch==']' || ch=='#' || ch=='/' && (text.length()>p+1 && (text.charAt(p+1)=='/' || text.charAt(p+1)=='*'));
   }
 
-  static boolean forceQuoteArray(JsonValue value, JsonArray array) {
-    return value.isString() && (array.isCondensed() || array.getLineLength()>1 || value.hasEOLComment());
+  static boolean forceQuoteArray(JsonValue value, JsonArray array, boolean outputComments) {
+    return value.isString() && (array.isCondensed() || array.getLineLength()>1 || (outputComments && value.hasEOLComment()));
   }
 
   // Technically different methods.
-  static boolean forceQuoteValue(JsonValue value, JsonObject object) {
-    return value.isString() && (object.isCondensed() || object.getLineLength()>1 || value.hasEOLComment());
+  static boolean forceQuoteValue(JsonValue value, JsonObject object, boolean outputComments) {
+    return value.isString() && (object.isCondensed() || object.getLineLength()>1 || (outputComments && value.hasEOLComment()));
   }
 
   static boolean forceQuoteObject(JsonObject object) {
