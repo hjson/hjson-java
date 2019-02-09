@@ -47,7 +47,7 @@ class HjsonWriter {
       outputComments=options.getOutputComments();
     } else {
       dsfProviders=new IHjsonDsfProvider[0];
-      bracesSameLine=true;
+      bracesSameLine=false;
       allowCondense=true;
       allowMultiVal=true;
       space="  ";

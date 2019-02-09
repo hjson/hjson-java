@@ -37,7 +37,7 @@ public class HjsonOptions {
   public HjsonOptions() {
     dsf=new IHjsonDsfProvider[0];
     legacyRoot=true;
-    bracesSameLine=true;
+    bracesSameLine=false;
     allowCondense=true;
     allowMultiVal=true;
     space="  ";
