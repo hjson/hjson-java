@@ -239,7 +239,7 @@ class HjsonParser {
     if (!objectWithoutBraces) read();
     JsonObject object=new JsonObject();
     object.setCondensed(isContainerCompact());
-    int sumLineLength=1;
+    int sumLineLength=0;
     int lineLength=1;
     int numLines=0;
 
