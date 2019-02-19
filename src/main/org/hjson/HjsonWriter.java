@@ -165,7 +165,7 @@ class HjsonWriter {
     for (int i=0; i<n; i++) {
       JsonValue element = arr.get(i);
       if (this.outputComments && element.hasBOLComment()) {
-        writeBOLComment(tw, element, level+1);
+        writeBOLComment(tw, element, level);
       }
       handleContainerLines(tw, arr.isCondensed(), i, level, arr.getLineLength());
       // Multiple strings in an array would require quotes.
