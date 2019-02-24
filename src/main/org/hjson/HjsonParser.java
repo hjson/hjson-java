@@ -149,9 +149,9 @@ class HjsonParser {
           case 'n':
           case 't':
             String svalue=value.toString().trim();
-            if (svalue.equals("false")) return JsonValue.FALSE;
-            else if (svalue.equals("null")) return JsonValue.NULL;
-            else if (svalue.equals("true")) return JsonValue.TRUE;
+            if (svalue.equals("false")) return JsonLiteral.jsonFalse();
+            else if (svalue.equals("null")) return JsonLiteral.jsonNull();
+            else if (svalue.equals("true")) return JsonLiteral.jsonTrue();
             break;
           default:
             if (first=='-' || first>='0' && first<='9') {

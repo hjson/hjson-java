@@ -162,7 +162,7 @@ class JsonParser {
     readRequiredChar('u');
     readRequiredChar('l');
     readRequiredChar('l');
-    return JsonValue.NULL;
+    return JsonLiteral.jsonNull();
   }
 
   private JsonValue readTrue() throws IOException {
@@ -170,7 +170,7 @@ class JsonParser {
     readRequiredChar('r');
     readRequiredChar('u');
     readRequiredChar('e');
-    return JsonValue.TRUE;
+    return JsonLiteral.jsonTrue();
   }
 
   private JsonValue readFalse() throws IOException {
@@ -179,7 +179,7 @@ class JsonParser {
     readRequiredChar('l');
     readRequiredChar('s');
     readRequiredChar('e');
-    return JsonValue.FALSE;
+    return JsonLiteral.jsonFalse();
   }
 
   private void readRequiredChar(char ch) throws IOException {
