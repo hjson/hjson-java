@@ -191,6 +191,8 @@ class HjsonParser {
       } else if (isEndOfText()) {
         throw error("End of input while parsing an array (did you forget a closing ']'?)");
       }
+      // Allow lines to begin with commas
+      readIf(',');
       // Value comes next.
       JsonValue value=readValue();
       value.setFullComment(CommentType.BOL, bol);
