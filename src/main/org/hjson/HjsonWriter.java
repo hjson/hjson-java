@@ -282,7 +282,7 @@ class HjsonWriter {
         if (needsEscapeML(ch)) { noEscapeML=false; break; }
         else if (!HjsonParser.isWhiteSpace(ch)) allWhite=false;
       }
-      if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level, separator);
+      if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level);
       else tw.write("\""+JsonWriter.escapeString(value)+"\"");
     }
     else {
@@ -292,11 +292,11 @@ class HjsonWriter {
     }
   }
 
-  void writeMLString(String value, Writer tw, int level, String separator) throws IOException {
+  void writeMLString(String value, Writer tw, int level) throws IOException {
     String[] lines=value.replace("\r", "").split("\n", -1);
 
     if (lines.length==1) {
-      tw.write(separator+"'''");
+      tw.write("'''");
       tw.write(lines[0]);
       tw.write("'''");
     }

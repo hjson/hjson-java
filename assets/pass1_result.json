@@ -45,8 +45,7 @@
       3,
       4,
       5,
-      6,
-      7
+      6
     ],
     "compact": [
       1,
@@ -54,8 +53,7 @@
       3,
       4,
       5,
-      6,
-      7
+      6
     ],
     "jsontext": "{\"object with 1 member\":[\"array with 1 element\"]}",
     "quotes": "&#34; \" %22 0x22 034 &#x22;",

@@ -191,7 +191,7 @@ class HjsonParser {
         throw error("End of input while parsing an array (did you forget a closing ']'?)");
       }
       // Allow commas to exist after new lines.
-      if (readIf(',')) {
+      if (array.size() > 0 && readIf(',')) {
         compact=false; // Can no longer be treated as compact.
         continue;
       }
@@ -203,6 +203,12 @@ class HjsonParser {
       skipToNL();
       if (readIf(',')) { // , is optional
         skipToNL();
+      }
+      // Extra commas at this point should not get parsed as values.
+      // This might be unnecessary, but it is included here to be
+      // consistent with the original spec and unit testing.
+      if (readIf(',')) {
+        throw error("Extra comma detected. Unclear element");
       }
       // Make sure we back up all the way to a
       // new line character or non-whitespace.
@@ -286,6 +292,12 @@ class HjsonParser {
       skipToNL();
       if (readIf(',')) { // , is optional
         skipToNL();
+      }
+      // Extra commas at this point should not get parsed as values.
+      // This might be unnecessary, but it is included here to be
+      // consistent with the original spec and unit testing.
+      if (readIf(',')) {
+        throw error("Extra comma detected. Unclear element");
       }
       // Make sure we back up all the way to a
       // new line character or non-whitespace.
