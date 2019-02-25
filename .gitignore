@@ -4,5 +4,6 @@ gradle
 gradlew
 gradle.bat
 build/
+out/
 hjson.iml
 .idea

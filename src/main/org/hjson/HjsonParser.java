@@ -172,7 +172,6 @@ class HjsonParser {
     read();
     JsonArray array=new JsonArray();
     boolean compact=isContainerCompact();
-    array.setCondensed(compact);
     int sumLineLength=0;
     int lineLength=1;
     int numLines=0;
@@ -191,8 +190,11 @@ class HjsonParser {
       } else if (isEndOfText()) {
         throw error("End of input while parsing an array (did you forget a closing ']'?)");
       }
-      // Allow lines to begin with commas
-      readIf(',');
+      // Allow commas to exist after new lines.
+      if (readIf(',')) {
+        compact=false; // Can no longer be treated as compact.
+        continue;
+      }
       // Value comes next.
       JsonValue value=readValue();
       value.setFullComment(CommentType.BOL, bol);
@@ -211,7 +213,7 @@ class HjsonParser {
       if (current!='\n') {
         // There was something else on this line.
         // See if it was an EOL #.
-        String eol = readBetweenVals(true);
+        String eol=readBetweenVals(true);
 
         if (!eol.isEmpty()) { // This is an EOL #.
           value.setFullComment(CommentType.EOL, eol);
@@ -233,6 +235,7 @@ class HjsonParser {
     } else if (compact) {
       array.setLineLength(array.size());
     }
+    array.setCondensed(compact);
     return array;
   }
 
@@ -277,7 +280,7 @@ class HjsonParser {
       readBetweenVals();
 
       // The value itself.
-      JsonValue value = readValue();
+      JsonValue value=readValue();
 
       // Skip whitespace surrounding a comma.
       skipToNL();
@@ -293,7 +296,7 @@ class HjsonParser {
       if (current!='\n') {
         // There was something else on this line.
         // See if it was an EOL #.
-        String eol = readBetweenVals(true);
+        String eol=readBetweenVals(true);
 
         if (!eol.isEmpty()) { // This is an EOL #.
           value.setFullComment(CommentType.EOL, eol);
