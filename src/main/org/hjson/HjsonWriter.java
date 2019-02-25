@@ -134,7 +134,7 @@ class HjsonWriter {
 
   void writeObject(JsonObject obj, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
-    openContainer(tw, noIndent, level, separator, '{');
+    openContainer(tw, noIndent, obj.isCondensed(), level, separator, '{');
 
     int index=0;
     for (JsonObject.Member pair : obj) {
@@ -159,7 +159,7 @@ class HjsonWriter {
 
   void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
-    openContainer(tw, noIndent, level, separator, '[');
+    openContainer(tw, noIndent, arr.isCondensed(), level, separator, '[');
 
     int n=arr.size();
     for (int i=0; i<n; i++) {
@@ -180,8 +180,8 @@ class HjsonWriter {
     closeContainer(tw, arr.isCondensed(), n, level, ']');
   }
 
-  void openContainer(Writer tw, boolean noIndent, int level, String separator, char openWith) throws IOException {
-    if (!noIndent) { if (bracesSameLine) tw.write(separator); else nl(tw, level); }
+  void openContainer(Writer tw, boolean noIndent, boolean condensed, int level, String separator, char openWith) throws IOException {
+    if (!noIndent) { if (bracesSameLine || condensed) tw.write(separator); else nl(tw, level); }
     tw.write(openWith);
   }
 
@@ -229,8 +229,10 @@ class HjsonWriter {
   }
 
   void closeContainer(Writer tw, boolean compact, int size, int level, char closeWith) throws IOException {
-    if (compact && allowCondense && allowMultiVal) tw.write(' ');
-    else if (size>0) nl(tw, level);
+    if (size>0) {
+      if (compact && allowCondense && allowMultiVal) tw.write(' ');
+      else nl(tw, level);
+    }
     tw.write(closeWith);
   }
 
