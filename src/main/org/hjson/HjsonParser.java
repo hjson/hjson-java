@@ -95,7 +95,7 @@ class HjsonParser {
         default:
           try {
             // assume we have a root object without braces
-            return checkTrailing(readObject(true));
+            return checkTrailing(readObject(false));
           } catch (Exception exception) {
             // test if we are dealing with a single JSON value instead (true/false/null/num/"")
             reset();
@@ -123,7 +123,7 @@ class HjsonParser {
       case '\'':
       case '"': return readString();
       case '[': return readArray();
-      case '{': return readObject(false);
+      case '{': return readObject(true);
       default: return readTfnns();
     }
   }
@@ -143,7 +143,7 @@ class HjsonParser {
         current=='}' || current==']' ||
         current=='#' ||
         current=='/' && (peek()=='/' || peek()=='*')
-        ) {
+      ) {
         switch (first) {
           case 'f':
           case 'n':
@@ -168,111 +168,21 @@ class HjsonParser {
     }
   }
 
-  private JsonArray readArray() throws IOException {
-    read();
-    JsonArray array=new JsonArray();
-    boolean compact=isContainerCompact();
-    int sumLineLength=0;
-    int lineLength=1;
-    int numLines=0;
-
-    while (true) {
-      // Comment above / before value.
-      String bol=readBetweenVals();
-
-      // If readBetweenVals() brought us to the
-      // end, it must be time to stop.
-      if (readIf(']')) {
-        // Because we reached the end, we learned
-        // that this was an interior comment.
-        array.setFullComment(CommentType.INTERIOR, bol);
-        break;
-      } else if (isEndOfText()) {
-        throw error("End of input while parsing an array (did you forget a closing ']'?)");
-      }
-      // Allow commas to exist after new lines.
-      if (array.size() > 0 && readIf(',')) {
-        compact=false; // Can no longer be treated as compact.
-        continue;
-      }
-      // Value comes next.
-      JsonValue value=readValue();
-      value.setFullComment(CommentType.BOL, bol);
-
-      // Skip whitespace surrounding a comma.
-      skipToNL();
-      if (readIf(',')) { // , is optional
-        skipToNL();
-      }
-      // Extra commas at this point should not get parsed as values.
-      // This might be unnecessary, but it is included here to be
-      // consistent with the original spec and unit testing.
-      if (readIf(',')) {
-        throw error("Extra comma detected. Unclear element");
-      }
-      // Make sure we back up all the way to a
-      // new line character or non-whitespace.
-      readIf('\r');
-
-      // If we hit a new line, whatever character
-      // comes next is either a value or BOL #.
-      if (current!='\n') {
-        // There was something else on this line.
-        // See if it was an EOL #.
-        String eol=readBetweenVals(true);
-
-        if (!eol.isEmpty()) { // This is an EOL #.
-          value.setFullComment(CommentType.EOL, eol);
-        } else { // There's another value on this line.
-          lineLength++;
-        }
-      } else {
-        sumLineLength+=lineLength;
-        lineLength=1;
-        // Tally the lines.
-        numLines++;
-      }
-      array.add(value);
-    }
-    if (sumLineLength>0) {
-      int avgLineLength=sumLineLength/numLines;
-      if (avgLineLength<1) avgLineLength=1;
-      array.setLineLength(avgLineLength);
-    } else if (compact) {
-      array.setLineLength(array.size());
-    }
-    array.setCondensed(compact);
-    return array;
-  }
-
-  private JsonObject readObject(boolean objectWithoutBraces) throws IOException {
+  private JsonObject readObject(boolean expectCloser) throws IOException {
     // Skip the opening brace.
-    if (!objectWithoutBraces) read();
+    if (expectCloser) read();
     JsonObject object=new JsonObject();
-    object.setCondensed(isContainerCompact());
-    int sumLineLength=0;
-    int lineLength=1;
-    int numLines=0;
+    ContainerData data=new ContainerData(isContainerCompact());
 
     while (true) {
       // Comment above / before name.
       String bol=readBetweenVals();
 
-      // If readBetweenVals() brought us to the
-      // end, it must be time to stop.
-      if (objectWithoutBraces) {
-        if (isEndOfText()) {
-          // Because we reached the end, we learned
-          // that this was an interior comment.
-          object.setFullComment(CommentType.INTERIOR, bol);
-          break;
-        }
-      } else {
-        if (isEndOfText()) throw error("End of input while parsing an object (did you forget a closing '}'?)");
-        if (readIf('}')) {
-          object.setFullComment(CommentType.INTERIOR, bol);
-          break;
-        }
+      if (checkEndOfContainer("object", '}', expectCloser)) {
+        // Because we reached the end, we learned
+        // that this was an interior comment.
+        object.setFullComment(CommentType.INTERIOR, bol);
+        break;
       }
       // Name comes next.
       String name=readName();
@@ -288,49 +198,87 @@ class HjsonParser {
       // The value itself.
       JsonValue value=readValue();
 
-      // Skip whitespace surrounding a comma.
-      skipToNL();
-      if (readIf(',')) { // , is optional
-        skipToNL();
-      }
-      // Extra commas at this point should not get parsed as values.
-      // This might be unnecessary, but it is included here to be
-      // consistent with the original spec and unit testing.
-      if (readIf(',')) {
-        throw error("Extra comma detected. Unclear element");
-      }
-      // Make sure we back up all the way to a
-      // new line character or non-whitespace.
-      readIf('\r');
-
-      // If we hit a new line, whatever character
-      // comes next is either a key or BOL #.
-      if (current!='\n') {
-        // There was something else on this line.
-        // See if it was an EOL #.
-        String eol=readBetweenVals(true);
-
-        if (!eol.isEmpty()) { // This is an EOL #.
-          value.setFullComment(CommentType.EOL, eol);
-        } else { // There's another value on this line.
-          lineLength++;
-        }
-      } else {
-        sumLineLength+=lineLength;
-        lineLength=1;
-        // Tally the lines.
-        numLines++;
-      }
+      finishContainerElement(data, value);
       // Set comments and add.
       value.setFullComment(CommentType.BOL, bol);
       object.add(name, value);
     }
-    if (sumLineLength>0) {
-      int avgLineLength=sumLineLength/numLines;
-      if (avgLineLength<1) avgLineLength=1;
-      object.setLineLength(avgLineLength);
+    return data.into(object);
+  }
+
+  private JsonArray readArray() throws IOException {
+    read(); // Clear the opening bracket.
+    JsonArray array=new JsonArray();
+    ContainerData data=new ContainerData(isContainerCompact());
+
+    while (true) {
+      // Any comments above / before value.
+      String bol=readBetweenVals();
+
+      if (checkEndOfContainer("array", ']', true)) {
+        // Because we reached the end, we learned
+        // that this was an interior comment.
+        array.setFullComment(CommentType.INTERIOR, bol);
+        break;
+      }
+      // The value must be next.
+      JsonValue value=readValue();
+      value.setFullComment(CommentType.BOL, bol);
+
+      finishContainerElement(data, value);
+      // Successfully parsed a value.
+      array.add(value);
     }
-    return object;
+    return data.into(array);
+  }
+
+  private void finishContainerElement(ContainerData data, JsonValue value) throws IOException {
+    int delimiter, numCommas=0;
+    while ((delimiter=readNextDelimiter())==',') {
+      skipToNL();
+      numCommas++;
+    }
+    // We should now be at the eol.
+    if (delimiter=='\n') { // Reached eol.
+      data.nl(); // Update the data to reflect this.
+      // Check for a comma on the next line.
+      // Also skip empty lines.
+      while ((delimiter=readNextDelimiter())>0) {
+        if (delimiter==',') {
+          data.overrideCondensed(); // Can no longer be treated as condensed.
+          numCommas++;
+        }
+      }
+    } else { // Did not reach eol.
+      // There was something else on this line.
+      // See if it was an EOL #.
+      String eol=readBetweenVals(true);
+      if (!eol.isEmpty()) { // This is an EOL #.
+        value.setFullComment(CommentType.EOL, eol);
+      } else { // There's another value on this line.
+        data.incrLineLength();
+      }
+    }
+    if (numCommas>1) throw error("Extra comma detected. Unclear element");
+  }
+
+  private boolean checkEndOfContainer(String type, char closer, boolean expectCloser) throws IOException {
+    if (isEndOfText()) {
+      if (expectCloser) throw error("End of input while parsing an "+type+". Did you forget a closing'"+closer+"'?");
+      return true;
+    }
+    if (expectCloser) return readIf(closer);
+    return false;
+  }
+
+  private int readNextDelimiter() throws IOException {
+    skipToNL();
+    int delimiter=current;
+    if (delimiter=='\n' || delimiter==',') {
+      read();
+      return delimiter;
+    }
+    return -1;
   }
 
   private boolean isContainerCompact() throws IOException {
@@ -553,7 +501,7 @@ class HjsonParser {
     startCapture();
     while (!isEndOfText()) {
       pauseCapture();
-      int indent=skipWhiteSpace();
+      skipWhiteSpace();
       startCapture();
       if (current=='#' || current=='/' && peek()=='/') {
         do {
@@ -563,6 +511,7 @@ class HjsonParser {
         else read();
       }
       else if (current=='/' && peek()=='*') {
+        int commentOffset=index-lineOffset;
         read();
         do {
           read();
@@ -570,7 +519,7 @@ class HjsonParser {
             read();
             // Make sure that we still only skip whitespace.
             // Spacing may be different on each line.
-            skipIfWhiteSpace(indent-1);
+            skipIfWhiteSpace(commentOffset);
           }
         } while (current>=0 && !(current=='*' && peek()=='/'));
         read(); read();
@@ -595,7 +544,7 @@ class HjsonParser {
   }
 
   private void skipToNL() throws IOException {
-    while (current==' ' || current=='\t') read();
+    while (current==' ' || current=='\t' || current=='\r') read();
   }
 
   private int peek(int idx) throws IOException {
@@ -695,11 +644,58 @@ class HjsonParser {
 
   private boolean isHexDigit() {
     return current>='0' && current<='9'
-        || current>='a' && current<='f'
-        || current>='A' && current<='F';
+      || current>='a' && current<='f'
+      || current>='A' && current<='F';
   }
 
   private boolean isEndOfText() {
     return current==-1;
+  }
+
+  private static class ContainerData {
+    private int lineLength=1;
+    private int sumLineLength=0;
+    private int numLines=0;
+    private boolean condensed;
+
+    private ContainerData(boolean condensed) {
+      this.condensed=condensed;
+    }
+
+    private void incrLineLength() {
+      lineLength++;
+    }
+
+    private void overrideCondensed() {
+      condensed=false;
+    }
+
+    private void nl() {
+      sumLineLength+=lineLength;
+      lineLength=1;
+      numLines++;
+    }
+
+    private int finalLineLength(int size) {
+      return sumLineLength>0 ? avgLineLength() : condensed ? size : 1;
+    }
+
+    private int avgLineLength() {
+      int avgLineLength=sumLineLength/numLines;
+      if (avgLineLength<=0) avgLineLength=1;
+      return avgLineLength;
+    }
+
+    private JsonArray into(JsonArray array) {
+      return array
+        .setLineLength(finalLineLength(array.size()))
+        .setCondensed(condensed);
+    }
+
+    private JsonObject into(JsonObject object) {
+      return object
+        .setLineLength(finalLineLength(object.size()))
+        .setCondensed(condensed);
+    }
   }
 }

@@ -198,7 +198,6 @@ class HjsonWriter {
   void writeInteriorComment(Writer tw, JsonValue value, int level) throws IOException {
     nl(tw, level+1);
     writeComment(value.getInteriorComment(), tw, level+1);
-    nl(tw, level);
   }
 
   void writeEOLComment(Writer tw, JsonValue value, int level) throws IOException {
