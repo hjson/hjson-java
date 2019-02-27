@@ -511,7 +511,7 @@ class HjsonParser {
         else read();
       }
       else if (current=='/' && peek()=='*') {
-        int commentOffset=index-lineOffset;
+        int commentOffset=index-lineOffset-1;
         read();
         do {
           read();

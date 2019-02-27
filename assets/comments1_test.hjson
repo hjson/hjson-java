@@ -1,0 +1,74 @@
+# Headers placed in this location will now be
+# correctly saved by hjson-java!
+{
+  # Comments can be placed above values.
+  numPenguins: 417 # And beside values.
+  // Multiple comment styles are supported.
+  anotherNum: 24
+  randString: "info", # Even with quotes and commas.
+  /*
+   There's a lot of info here.
+   Here's another line.
+   And another line.
+  */
+  complicatedObject:
+  {
+    apples: 12
+    bananas: 14
+    /*
+     a fancy
+       interior comment
+         for you
+    */
+  }
+  # Objects and arrays placed on a single line are
+  # considered "condensed" and will remain that way.
+  arrayOfNums: [ 1, 2, 3, 4, 5 ]
+  # Objects and arrays with multiple values per-
+  # line will continue to have multiple values
+  # per-line, based on the average line length.
+  multiLine:
+  [
+    1, 2, 3
+    4, 5, 6
+  ]
+  # These should get averaged to 2.
+  averageLines:
+  [
+    1
+    2, 3
+    4, 5, 6
+  ]
+  # This works especially well for multi-dimensional
+  # arrays (i.e. matrices).
+  matrix:
+  [
+    [ 1, 2, 3 ]
+    [ 4, 5, 6 ]
+    [ 7, 8, 9 ]
+    /*
+     Another comment
+       goes here
+    */
+  ]
+  # Objects will do the same. Keys and values will
+  # be correctly quoted, when necessary.
+  multiLineObj:
+  {
+    "value1": 1, "value2": 2
+    "value3": "three", "value4": 4
+  }
+  # Unnecessary quotes will be removed.
+  unnecessaryQuotes:
+  {
+    "numPenguins": 36,
+    "numPolarBears": "twenty-four"
+  }
+  # Just to verify that these still work.
+  multiLineString: 
+    '''
+    test
+    and more test
+    and still more
+    '''
+}

@@ -31,6 +31,7 @@ public class Main {
     int extIdx=file.lastIndexOf('.');
     boolean isJson=extIdx>=0 && file.substring(extIdx).equals(".json");
     boolean shouldFail=name.startsWith("fail");
+    boolean useComments=name.startsWith("comments");
 
     JsonValue.setEol(outputCr?"\r\n":"\n");
     String text=load(file, inputCr);
@@ -41,7 +42,7 @@ public class Main {
 
       JsonValue data=JsonValue.readHjson(text, opt);
       String data1=data.toString(Stringify.FORMATTED);
-      String hjson1=data.toString(Stringify.HJSON);
+      String hjson1=data.toString(useComments ? Stringify.HJSON_COMMENTS : Stringify.HJSON);
       if (!shouldFail) {
         JsonValue result=JsonValue.readJSON(load(name+"_result.json", inputCr));
         String data2=result.toString(Stringify.FORMATTED);
