@@ -27,7 +27,10 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a JSON value. This can be a JSON <strong>object</strong>, an <strong> array</strong>,
@@ -255,6 +258,36 @@ public abstract class JsonValue implements Serializable {
    */
   public static JsonValue valueOfDsf(Object value) {
     return new JsonDsf(value);
+  }
+
+  /**
+   * Returns a JsonValue from an Object of unknown type.
+   * @return a new JsonValue.
+   */
+  @SuppressWarnings("unchecked")
+  public static JsonValue valueOf(Object value) {
+    if (value instanceof Number) {
+      return new JsonNumber((Double) value);
+    } else if (value instanceof String) {
+      return new JsonString((String) value);
+    } else if (value instanceof Boolean) {
+      return (Boolean) value ? JsonLiteral.jsonTrue() : JsonLiteral.jsonFalse();
+    } else if (value instanceof List) {
+      JsonArray array=new JsonArray();
+      for (Object o : (List) value) {
+        array.add(valueOf(o));
+      }
+      return array;
+    } else if (value instanceof Map) {
+      Set<Map.Entry> entries=((Map)value).entrySet();
+      JsonObject object=new JsonObject();
+      for (Map.Entry entry : entries) {
+        object.set(entry.getKey().toString(), valueOf(entry.getValue()));
+      }
+      return object;
+    } else {
+      return null;
+    }
   }
 
   /**
