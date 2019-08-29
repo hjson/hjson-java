@@ -286,7 +286,7 @@ public abstract class JsonValue implements Serializable {
       }
       return object;
     } else {
-      return null;
+      throw new UnsupportedOperationException("Unable to determine type.");
     }
   }
 
