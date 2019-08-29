@@ -129,6 +129,16 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Returns whether the input key is contained within this object.
+   *
+   * @param name The name of the key to search for.
+   * @ return    Whether the key exists.
+   */
+  public boolean has(String name) {
+    return indexOf(name)!=-1;
+  }
+
+  /**
    * Appends a new member to the end of this object, with the specified name and the JSON
    * representation of the specified <code>int</code> value.
    * <p>
