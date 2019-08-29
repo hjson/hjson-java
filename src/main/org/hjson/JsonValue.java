@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
 
 /**
  * Represents a JSON value. This can be a JSON <strong>object</strong>, an <strong> array</strong>,
@@ -584,6 +585,26 @@ public abstract class JsonValue implements Serializable {
   public Object asDsf() {
     throw new UnsupportedOperationException("Not a DSF");
   }
+
+  /**
+   * Unsafe. Returns the raw form of this JSON value. For compatibility with other config wrappers.
+   * @param <T> the type of object to be returned.
+   * @return the raw object.
+   * @throws ClassCastException when the type returned does not match the original value.
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T asRaw() {
+    switch (getType()) {
+      case STRING : return (T) asString();
+      case NUMBER : return (T) Double.valueOf(asDouble());
+      case OBJECT : return (T) asObject();
+      case ARRAY : return (T) asArray().asRawList();
+      case BOOLEAN : return (T) Boolean.valueOf(asBoolean());
+      case DSF : return (T) asDsf();
+      default : return null;
+    }
+  }
+
   /**
    * Writes the JSON representation of this value to the given writer in its minimal form, without
    * any additional whitespace.

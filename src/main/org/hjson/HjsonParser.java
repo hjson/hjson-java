@@ -140,9 +140,9 @@ class HjsonParser {
       read();
       boolean isEol=current<0 || current=='\r' || current=='\n';
       if (isEol || current==',' ||
-        current=='}' || current==']' ||
-        current=='#' ||
-        current=='/' && (peek()=='/' || peek()=='*')
+              current=='}' || current==']' ||
+              current=='#' ||
+              current=='/' && (peek()=='/' || peek()=='*')
       ) {
         switch (first) {
           case 'f':
@@ -644,8 +644,8 @@ class HjsonParser {
 
   private boolean isHexDigit() {
     return current>='0' && current<='9'
-      || current>='a' && current<='f'
-      || current>='A' && current<='F';
+            || current>='a' && current<='f'
+            || current>='A' && current<='F';
   }
 
   private boolean isEndOfText() {
@@ -688,14 +688,14 @@ class HjsonParser {
 
     private JsonArray into(JsonArray array) {
       return array
-        .setLineLength(finalLineLength(array.size()))
-        .setCondensed(condensed);
+              .setLineLength(finalLineLength(array.size()))
+              .setCondensed(condensed);
     }
 
     private JsonObject into(JsonObject object) {
       return object
-        .setLineLength(finalLineLength(object.size()))
-        .setCondensed(condensed);
+              .setLineLength(finalLineLength(object.size()))
+              .setCondensed(condensed);
     }
   }
 }

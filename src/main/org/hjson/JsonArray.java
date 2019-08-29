@@ -116,6 +116,19 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Unsafe. Returns a raw list of the objects contained within this array. For compatibiliity with
+   * other config wrappers.
+   * @return the array as a list of raw objects.
+   */
+  public List<Object> asRawList() {
+    final List<Object> array=new ArrayList<>();
+    for (JsonValue value : this) {
+      array.add(value.asRaw());
+    }
+    return array;
+  }
+
+  /**
    * Appends the JSON representation of the specified <code>int</code> value to the end of this
    * array.
    *

@@ -265,7 +265,8 @@ class HjsonWriter {
       left=='/' && (left1=='*' || left1=='/') ||
       JsonValue.isPunctuatorChar(left) ||
       HjsonParser.tryParseNumber(value, true)!=null ||
-      startsWithKeyword(value)) {
+      startsWithKeyword(value))
+    {
       // If the String contains no control characters, no quote characters, and no
       // backslash characters, then we can safely slap some quotes around it.
       // Otherwise we first check if the String can be expressed in multiline
