@@ -267,7 +267,7 @@ public abstract class JsonValue implements Serializable {
   @SuppressWarnings("unchecked")
   public static JsonValue valueOf(Object value) {
     if (value instanceof Number) {
-      return new JsonNumber((Double) value);
+      return new JsonNumber(((Number) value).doubleValue());
     } else if (value instanceof String) {
       return new JsonString((String) value);
     } else if (value instanceof Boolean) {
