@@ -32,6 +32,7 @@ class HjsonWriter {
   private boolean bracesSameLine;
   private boolean allowCondense;
   private boolean allowMultiVal;
+  private boolean emitRootBraces;
   private String space, commentSpace;
 
   static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"']|//|/\\*");
@@ -45,11 +46,13 @@ class HjsonWriter {
       space=options.getSpace();
       commentSpace=options.getCommentSpace();
       outputComments=options.getOutputComments();
+      emitRootBraces=options.getEmitRootBraces();
     } else {
       dsfProviders=new IHjsonDsfProvider[0];
       bracesSameLine=false;
       allowCondense=true;
       allowMultiVal=true;
+      emitRootBraces=false;
       space="  ";
       commentSpace="";
       outputComments=false;
@@ -97,7 +100,7 @@ class HjsonWriter {
     }
 
     // Write the header, if applicable.
-    if (this.outputComments && level==0 && value.hasBOLComment()) {
+    if (outputComments && level==0 && value.hasBOLComment()) {
       writeHeader(tw, value, level);
     }
 
@@ -127,18 +130,19 @@ class HjsonWriter {
     }
 
     // Write any following comments.
-    if (this.outputComments && value.hasEOLComment()) {
+    if (outputComments && value.hasEOLComment()) {
       writeEOLComment(tw, value, level);
     }
   }
 
   void writeObject(JsonObject obj, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
-    openContainer(tw, noIndent, obj.isCondensed(), level, separator, '{');
+    boolean emitBraces = emitBraces(obj, level);
+    if (!emitBraces) openContainer(tw, noIndent, obj.isCondensed(), level, separator, '{');
 
     int index=0;
     for (JsonObject.Member pair : obj) {
-      if (this.outputComments && pair.getValue().hasBOLComment()) {
+      if (outputComments && pair.getValue().hasBOLComment()) {
         writeBOLComment(tw, pair.getValue(), level);
       }
 
@@ -150,11 +154,11 @@ class HjsonWriter {
       index++;
     }
     // Put interior comments at the bottom.
-    if (this.outputComments && obj.hasInteriorComment()) {
+    if (outputComments && obj.hasInteriorComment()) {
       writeInteriorComment(tw, obj, level);
     }
     // We've reached the end of the container. Close it off.
-    closeContainer(tw, obj.isCondensed(), obj.size(), level, '}');
+    if (!emitBraces) closeContainer(tw, obj.isCondensed(), obj.size(), level, '}');
   }
 
   void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent) throws IOException {
@@ -173,11 +177,15 @@ class HjsonWriter {
       save(element, tw, level+1, "", true, forceQuoteArray);
     }
     // Put the interior comments at the bottom.
-    if (this.outputComments && arr.hasInteriorComment()) {
+    if (outputComments && arr.hasInteriorComment()) {
       writeInteriorComment(tw, arr, level);
     }
     // We've reached the end of the container. Close it off.
     closeContainer(tw, arr.isCondensed(), n, level, ']');
+  }
+
+  boolean emitBraces(JsonObject obj, int level) {
+    return emitRootBraces && level==0 && !(obj.hasBOLComment() && outputComments);
   }
 
   void openContainer(Writer tw, boolean noIndent, boolean condensed, int level, String separator, char openWith) throws IOException {
@@ -219,7 +227,9 @@ class HjsonWriter {
       // NL every (lineLength) # lines.
       if (!(compact && allowCondense)) {
         nl(tw, level+1);
-      } else { // Manually separate.
+      } else if (index>0) { // Manually separate.
+        tw.write(", ");
+      } else {
         tw.write(' ');
       }
     } else {

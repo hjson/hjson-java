@@ -32,6 +32,7 @@ public class HjsonOptions {
   private boolean bracesSameLine;
   private boolean allowCondense;
   private boolean allowMultiVal;
+  private boolean emitRootBraces;
   private String space, commentSpace;
 
   public HjsonOptions() {
@@ -40,6 +41,7 @@ public class HjsonOptions {
     bracesSameLine=false;
     allowCondense=true;
     allowMultiVal=true;
+    emitRootBraces=false;
     space="  ";
     commentSpace="";
     outputComments=false;
@@ -78,21 +80,17 @@ public class HjsonOptions {
   /**
    * Detects whether root braces should be emitted.
    *
-   * @deprecated will always return true.
    * @return <code>true</code> if this feature is enabled.
    */
-  @Deprecated
-  public boolean getEmitRootBraces() { return true; }
+  public boolean getEmitRootBraces() { return emitRootBraces; }
 
   /**
    * Sets whether root braces should be emitted.
    *
-   * @deprecated root braces are always emitted.
    * @param value value
    * @return this, to enable chaining
    */
-  @Deprecated
-  public HjsonOptions setEmitRootBraces(boolean value) { return this; }
+  public HjsonOptions setEmitRootBraces(boolean value) { emitRootBraces=value; return this; }
 
   /**
    * Detects whether braces and brackets should be placed on new lines.

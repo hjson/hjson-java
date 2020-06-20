@@ -13,14 +13,6 @@ sourceSets {
       srcDir 'src/main'
     }
   }
-  test {
-    java {
-      srcDir 'src/test'
-    }
-    resources {
-      srcDir 'assets'
-    }
-  }
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -48,7 +40,7 @@ artifacts {
 }
 
 task(testSuite, dependsOn: ['classes','testClasses'], type: JavaExec) {
-  main = 'org.hjson.test.Main'
+  main = 'test.org.hjson.test.Main'
   classpath = files(sourceSets.main.runtimeClasspath, sourceSets.test.runtimeClasspath)
 }
 

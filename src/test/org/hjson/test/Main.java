@@ -1,4 +1,4 @@
-package org.hjson.test;
+package test.org.hjson.test;
 
 import org.hjson.*;
 import java.io.*;
@@ -20,7 +20,7 @@ public class Main {
   }
 
   private static String load(String file, boolean cr) throws Exception {
-    InputStream res=Main.class.getResourceAsStream("/"+file);
+    InputStream res=Main.class.getResourceAsStream("/assets/"+file);
     if (res==null) throw new Exception(file+" not found!");
     String text=convertStreamToString(res);
     String std=text.replace("\r", ""); // make sure we have unix style text regardless of the input
@@ -31,7 +31,6 @@ public class Main {
     int extIdx=file.lastIndexOf('.');
     boolean isJson=extIdx>=0 && file.substring(extIdx).equals(".json");
     boolean shouldFail=name.startsWith("fail");
-    boolean useComments=name.startsWith("comments");
 
     JsonValue.setEol(outputCr?"\r\n":"\n");
     String text=load(file, inputCr);
@@ -39,10 +38,13 @@ public class Main {
     try {
       HjsonOptions opt=new HjsonOptions();
       opt.setParseLegacyRoot(false);
+      if (name.startsWith("comments")) {
+        opt.setOutputComments(true);
+      }
 
       JsonValue data=JsonValue.readHjson(text, opt);
       String data1=data.toString(Stringify.FORMATTED);
-      String hjson1=data.toString(useComments ? Stringify.HJSON_COMMENTS : Stringify.HJSON);
+      String hjson1=data.toString(opt);
       if (!shouldFail) {
         JsonValue result=JsonValue.readJSON(load(name+"_result.json", inputCr));
         String data2=result.toString(Stringify.FORMATTED);
