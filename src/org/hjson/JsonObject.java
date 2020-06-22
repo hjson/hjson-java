@@ -661,6 +661,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     if (value==null) {
       throw new NullPointerException("value is null");
     }
+    value.setAccessed(true);
     int index=indexOf(name);
     if (index!=-1) {
       values.set(index, value);
@@ -761,7 +762,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
       throw new NullPointerException("name is null");
     }
     int index=indexOf(name);
-    return index!=-1 ? values.get(index) : null;
+    return index!=-1 ? values.get(index).setAccessed(true) : null;
   }
 
   /**
@@ -941,6 +942,29 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject setCondensed(boolean value) { condensed=value; return this; }
+
+  /**
+   * Generates a list of paths that have not yet been accessed in-code.
+   * @return the list of unused paths.
+   */
+  public List<String> getUnusedPaths() {
+    List<String> paths=new ArrayList<String>();
+    for (Member m : this) {
+      if (!m.value.isAccessed()) {
+        paths.add(m.name);
+      } //else {paths.add("*"+m.name);}
+      if (m.value.isObject()) {
+        for (String s : m.value.asObject().getUnusedPaths()) {
+          paths.add(m.name+"."+s);
+        }
+      } else if (m.value.isArray()) {
+        for (String s : m.value.asArray().getUnusedPaths()) {
+          paths.add(m.name+s);
+        }
+      }
+    }
+    return paths;
+  }
 
   /**
    * Sorts all members of this object according to their keys, in alphabetical order.

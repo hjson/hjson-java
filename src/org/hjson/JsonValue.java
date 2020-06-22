@@ -27,7 +27,6 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +68,11 @@ public abstract class JsonValue implements Serializable {
    * Comments that will be used by each type of value.
    */
   protected String bolComment="", eolComment="", intComment="";
+
+  /**
+   * A flag indicating whether this value has been specifically called for.
+   */
+  protected boolean accessed;
 
   /**
    * Gets the newline charater(s).
@@ -370,6 +374,24 @@ public abstract class JsonValue implements Serializable {
    */
   public boolean isNull() {
     return false;
+  }
+
+  /**
+   *  Detects whether this value has been accessed in-code.
+   * @return true if the value has been used.
+   */
+  public boolean isAccessed() {
+    return accessed;
+  }
+
+  /**
+   * Overrides whether this field has been accessed in-code.
+   * @param b The value to override with.
+   * @return This, to enable chaining.
+   */
+  public JsonValue setAccessed(boolean b) {
+    accessed=b;
+    return this;
   }
 
   /**
