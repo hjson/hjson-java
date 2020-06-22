@@ -266,6 +266,8 @@ public abstract class JsonValue implements Serializable {
 
   /**
    * Returns a JsonValue from an Object of unknown type.
+   * 
+   * @param value the value to get a JSON representation for
    * @return a new JsonValue.
    */
   @SuppressWarnings("unchecked")

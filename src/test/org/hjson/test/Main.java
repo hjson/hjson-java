@@ -1,4 +1,4 @@
-package test.org.hjson.test;
+package org.hjson.test;
 
 import org.hjson.*;
 import java.io.*;
@@ -20,7 +20,7 @@ public class Main {
   }
 
   private static String load(String file, boolean cr) throws Exception {
-    InputStream res=Main.class.getResourceAsStream("/assets/"+file);
+    InputStream res=Main.class.getResourceAsStream("/"+file);
     if (res==null) throw new Exception(file+" not found!");
     String text=convertStreamToString(res);
     String std=text.replace("\r", ""); // make sure we have unix style text regardless of the input
@@ -31,6 +31,7 @@ public class Main {
     int extIdx=file.lastIndexOf('.');
     boolean isJson=extIdx>=0 && file.substring(extIdx).equals(".json");
     boolean shouldFail=name.startsWith("fail");
+    boolean comments=name.startsWith("comments");
 
     JsonValue.setEol(outputCr?"\r\n":"\n");
     String text=load(file, inputCr);
@@ -38,7 +39,7 @@ public class Main {
     try {
       HjsonOptions opt=new HjsonOptions();
       opt.setParseLegacyRoot(false);
-      if (name.startsWith("comments")) {
+      if (comments) {
         opt.setOutputComments(true);
       }
 
