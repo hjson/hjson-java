@@ -1,0 +1,11 @@
+{
+  obj: {
+    inner: { "value": true }
+  }
+  array: [
+    {
+      inner: [ 0, 80 ]
+      num: 33
+    }
+  ]
+}

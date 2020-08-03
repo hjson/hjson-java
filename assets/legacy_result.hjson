@@ -1,0 +1,9 @@
+{
+  num: 55
+  dec: 55.5
+  obj:
+  {
+    value: 55
+  }
+  array: [ 55 ]
+}
