@@ -200,7 +200,7 @@ class JsonParser {
         pauseCapture();
         readEscape();
         startCapture();
-      } else if (current<0x20) {
+      } else if (current<0x20 && current!=0x09) {
         throw expected("valid string character");
       } else {
         read();
