@@ -84,3 +84,4 @@ stringify/quotes_strings_test.hjson
 extra/notabs_test.json
 extra/root_test.hjson
 extra/separator_test.json
+tab_test.hjson
