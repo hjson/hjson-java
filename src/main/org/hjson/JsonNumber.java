@@ -39,6 +39,8 @@ class JsonNumber extends JsonValue {
   public String toString() {
     long l=(long)value;
     if (l==value) return Long.toString(l);
+    if (Double.isNaN(value) || Double.isInfinite(value)) return Double.toString(value);
+    
     String res=BigDecimal.valueOf(value).toEngineeringString();
     if (res.endsWith(".0")) return res.substring(0, res.length()-2);
     else if (res.contains("E")) {
