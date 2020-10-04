@@ -4,9 +4,9 @@
 [![Maven Central](https://img.shields.io/maven-central/v/org.hjson/hjson.svg?style=flat-square)](http://search.maven.org/#search|ga|1|g%3A%22org.hjson%22%20a%3A%22hjson%22)
 [![Javadoc](https://javadoc-emblem.rhcloud.com/doc/org.hjson/hjson/badge.svg?style=flat-square&color=blue)](http://www.javadoc.io/doc/org.hjson/hjson)
 
-[Hjson](https://hjson.github.com), the Human JSON. A configuration file format for humans. Relaxed syntax, fewer mistakes, more comments.
+[Hjson](https://hjson.github.io), the Human JSON. A configuration file format for humans. Relaxed syntax, fewer mistakes, more comments.
 
-![Hjson Intro](https://hjson.github.com/hjson1.gif)
+![Hjson Intro](https://hjson.github.io/hjson1.gif)
 
 ```
 {
@@ -27,7 +27,7 @@
 }
 ```
 
-The Java implementation of Hjson is based on [minimal-json](https://github.com/ralfstx/minimal-json). For other platforms see [hjson.github.com](https://hjson.github.com).
+The Java implementation of Hjson is based on [minimal-json](https://github.com/ralfstx/minimal-json). For other platforms see [hjson.github.io](https://hjson.github.io).
 
 # CLI
 
