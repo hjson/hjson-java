@@ -1,5 +1,5 @@
 charset_test.hjson
-comments_test.hjson
+comments1_test.hjson
 empty_test.hjson
 failCharset1_test.hjson
 failJSON02_test.json
@@ -65,6 +65,7 @@ failStr7a_test.hjson
 failStr8a_test.hjson
 kan_test.hjson
 keys_test.hjson
+legacy_test.hjson
 mltabs_test.json
 oa_test.hjson
 pass1_test.json
@@ -72,6 +73,8 @@ pass2_test.json
 pass3_test.json
 pass4_test.json
 passSingle_test.hjson
+rmcomments_test.hjson
+sameline_test.hjson
 stringify1_test.hjson
 strings2_test.hjson
 strings_test.hjson

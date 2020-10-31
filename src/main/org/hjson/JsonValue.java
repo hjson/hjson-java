@@ -22,21 +22,19 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a JSON value. This can be a JSON <strong>object</strong>, an <strong> array</strong>,
  * a <strong>number</strong>, a <strong>string</strong>, or one of the literals
  * <strong>true</strong>, <strong>false</strong>, and <strong>null</strong>.
- * <p>
- * The literals <strong>true</strong>, <strong>false</strong>, and <strong>null</strong> are
- * represented by the constants {@link #TRUE}, {@link #FALSE}, and {@link #NULL}.
- * </p>
  * <p>
  * JSON <strong>objects</strong> and <strong>arrays</strong> are represented by the subtypes
  * {@link JsonObject} and {@link JsonArray}. Instances of these types can be created using the
@@ -64,22 +62,17 @@ import java.io.Writer;
 @SuppressWarnings("serial") // use default serial UID
 public abstract class JsonValue implements Serializable {
 
-  /**
-   * Represents the JSON literal <code>true</code>.
-   */
-  public static final JsonValue TRUE=JsonLiteral.TRUE;
-
-  /**
-   * Represents the JSON literal <code>false</code>.
-   */
-  public static final JsonValue FALSE=JsonLiteral.FALSE;
-
-  /**
-   * Represents the JSON literal <code>null</code>.
-   */
-  public static final JsonValue NULL=JsonLiteral.NULL;
-
   static String eol=System.getProperty("line.separator");
+
+  /**
+   * Comments that will be used by each type of value.
+   */
+  protected String bolComment="", eolComment="", intComment="";
+
+  /**
+   * A flag indicating whether this value has been specifically called for.
+   */
+  protected boolean accessed;
 
   /**
    * Gets the newline charater(s).
@@ -248,7 +241,7 @@ public abstract class JsonValue implements Serializable {
    * @return a JSON value that represents the given string
    */
   public static JsonValue valueOf(String string) {
-    return string==null ? NULL : new JsonString(string);
+    return string==null ? JsonLiteral.jsonNull() : new JsonString(string);
   }
 
   /**
@@ -258,7 +251,7 @@ public abstract class JsonValue implements Serializable {
    * @return a JSON value that represents the given value
    */
   public static JsonValue valueOf(boolean value) {
-    return value ? TRUE : FALSE;
+    return value ? JsonLiteral.jsonTrue() : JsonLiteral.jsonFalse();
   }
 
   /**
@@ -271,6 +264,37 @@ public abstract class JsonValue implements Serializable {
     return new JsonDsf(value);
   }
 
+  /**
+   * Returns a JsonValue from an Object of unknown type.
+   *
+   * @param value the value to get a JSON representation for
+   * @return a new JsonValue.
+   */
+  @SuppressWarnings("unchecked")
+  public static JsonValue valueOf(Object value) {
+    if (value instanceof Number) {
+      return new JsonNumber(((Number) value).doubleValue());
+    } else if (value instanceof String) {
+      return new JsonString((String) value);
+    } else if (value instanceof Boolean) {
+      return (Boolean) value ? JsonLiteral.jsonTrue() : JsonLiteral.jsonFalse();
+    } else if (value instanceof List) {
+      JsonArray array=new JsonArray();
+      for (Object o : (List) value) {
+        array.add(valueOf(o));
+      }
+      return array;
+    } else if (value instanceof Map) {
+      Set<Map.Entry> entries=((Map)value).entrySet();
+      JsonObject object=new JsonObject();
+      for (Map.Entry entry : entries) {
+        object.set(entry.getKey().toString(), valueOf(entry.getValue()));
+      }
+      return object;
+    } else {
+      throw new UnsupportedOperationException("Unable to determine type.");
+    }
+  }
 
   /**
    * Gets the type of this JSON value.
@@ -352,6 +376,152 @@ public abstract class JsonValue implements Serializable {
    */
   public boolean isNull() {
     return false;
+  }
+
+  /**
+   *  Detects whether this value has been accessed in-code.
+   * @return true if the value has been used.
+   */
+  public boolean isAccessed() {
+    return accessed;
+  }
+
+  /**
+   * Overrides whether this field has been accessed in-code.
+   * @param b The value to override with.
+   * @return This, to enable chaining.
+   */
+  public JsonValue setAccessed(boolean b) {
+    accessed=b;
+    return this;
+  }
+
+  /**
+   * Detects whether this value contains any comments.
+   *
+   * @return <code>true</code> if this value does contain comments.
+   */
+  public boolean hasComments() {
+    return hasBOLComment() || hasEOLComment() || hasInteriorComment();
+  }
+
+  /**
+   * Detects whether this value contains any beginning of line comments.
+   *
+   * @return <code>true</code> if this value does contain any BOL comments.
+   */
+  public boolean hasBOLComment() { return !bolComment.isEmpty(); }
+
+  /**
+   * Detects whether this value contains any end of line comments.
+   *
+   * @return <code>true</code> if this value does contain any EOL comments.
+   */
+  public boolean hasEOLComment() { return !eolComment.isEmpty(); }
+
+  /**
+   * Detects whether this value contains any interior comments, which may be present inside of
+   * object and array types with no association to any of their members.
+   *
+   * @return <code>true</code> if this value does contain any interior comments.
+   */
+  public boolean hasInteriorComment() { return !intComment.isEmpty(); }
+
+  /**
+   * Gets any comment that exists before this value.
+   *
+   * @return The full contents of this comment, including any comment indicators.
+   */
+  public String getBOLComment() { return bolComment; }
+
+  /**
+   * Gets any comment that exists after this value.
+   *
+   * @return The full contents of this comment, including any comment indicators.
+   */
+  public String getEOLComment() { return eolComment; }
+
+  /**
+   * Gets any non-BOL or EOL comment contained within this value.
+   *
+   * @return The full contents of this comment, including any comment indicators.
+   */
+  public String getInteriorComment() { return intComment; }
+
+  /**
+   * Adds a comment to be associated with this value.
+   * @param type Whether to place this comment before the line, after the line, or inside of the
+   *             object or array, if applicable.
+   * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue setComment(CommentType type, CommentStyle style, String comment) {
+    StringBuilder formatted=new StringBuilder();
+    if (style.equals(CommentStyle.BLOCK)){
+      formatted.append("/*");
+      formatted.append(eol);
+      formatted.append(comment);
+      formatted.append(eol);
+      formatted.append("*/");
+    } else {
+      String[] lines=comment.split("\r?\n");
+      // Iterate through all lines in the comment.
+      for (int i=0; i<lines.length; i++) {
+        // Don't concatenate lines.
+        if (i>0) formatted.append(eol);
+        // Add the indicator and extra space.
+        if (style.equals(CommentStyle.HASH)){
+          formatted.append("# ");
+        } else {
+          formatted.append("// ");
+        }
+        // Add the actual line from the comment.
+        formatted.append(lines[i]);
+      }
+    }
+    setFullComment(type, formatted.toString());
+    return this;
+  }
+
+  /**
+   * Shorthand for {@link #setComment(CommentType, CommentStyle, String)} which defaults to sending
+   * a beginning of line, single line comment, using the default indicator, <code>#</code>.
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue setComment(String comment) {
+    return setComment(CommentType.BOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Shorthand for calling {@link #setComment(CommentType, CommentStyle, String)} which defaults to
+   * sending an end of line, single line comment, using the default indicator, <code>#</code>.
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue setEOLComment(String comment) {
+    return setComment(CommentType.EOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Counterpart to {@link #setComment(CommentType, CommentStyle, String)} which receives
+   * the full, formatted comment to be stored by this value.
+   *
+   * @param type Whether to place this comment before the line, after the line, or inside of the
+   *             object or array, if applicable.
+   * @param comment The fully-formatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue setFullComment(CommentType type, String comment) {
+    switch (type) {
+      case BOL: bolComment=comment; break;
+      case EOL: eolComment=comment; break;
+      case INTERIOR: intComment=comment; break;
+    }
+    return this;
   }
 
   /**
@@ -472,6 +642,26 @@ public abstract class JsonValue implements Serializable {
   public Object asDsf() {
     throw new UnsupportedOperationException("Not a DSF");
   }
+
+  /**
+   * Unsafe. Returns the raw form of this JSON value. For compatibility with other config wrappers.
+   * @param <T> the type of object to be returned.
+   * @return the raw object.
+   * @throws ClassCastException when the type returned does not match the original value.
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T asRaw() {
+    switch (getType()) {
+      case STRING : return (T) asString();
+      case NUMBER : return (T) Double.valueOf(asDouble());
+      case OBJECT : return (T) asObject();
+      case ARRAY : return (T) asArray().asRawList();
+      case BOOLEAN : return (T) Boolean.valueOf(asBoolean());
+      case DSF : return (T) asDsf();
+      default : return null;
+    }
+  }
+
   /**
    * Writes the JSON representation of this value to the given writer in its minimal form, without
    * any additional whitespace.
@@ -501,7 +691,8 @@ public abstract class JsonValue implements Serializable {
     switch (format) {
       case PLAIN: new JsonWriter(false).save(this, buffer, 0); break;
       case FORMATTED: new JsonWriter(true).save(this, buffer, 0); break;
-      case HJSON: new HjsonWriter(null).save(this, buffer, 0, "", true); break;
+      case HJSON: new HjsonWriter(null, false).save(this, buffer, 0, "", true); break;
+      case HJSON_COMMENTS: new HjsonWriter(null, true).save(this, buffer, 0, "", true); break;
     }
     buffer.flush();
   }

@@ -31,17 +31,25 @@ public class Main {
     int extIdx=file.lastIndexOf('.');
     boolean isJson=extIdx>=0 && file.substring(extIdx).equals(".json");
     boolean shouldFail=name.startsWith("fail");
+    boolean comments=name.startsWith("comments");
+    boolean sameLine=name.startsWith("sameline");
 
     JsonValue.setEol(outputCr?"\r\n":"\n");
     String text=load(file, inputCr);
 
     try {
       HjsonOptions opt=new HjsonOptions();
-      opt.setParseLegacyRoot(false);
+      if (comments) {
+        opt.setOutputComments(true);
+      }
+      if (sameLine) {
+        opt.setBracesSameLine(true);
+      }
 
       JsonValue data=JsonValue.readHjson(text, opt);
       String data1=data.toString(Stringify.FORMATTED);
-      String hjson1=data.toString(Stringify.HJSON);
+      String hjson1=data.toString(opt);
+
       if (!shouldFail) {
         JsonValue result=JsonValue.readJSON(load(name+"_result.json", inputCr));
         String data2=result.toString(Stringify.FORMATTED);

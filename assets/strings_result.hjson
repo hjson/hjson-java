@@ -9,19 +9,19 @@
   notml2: "  \n"
   notml3: "\n  \n  \n  \n"
   notml4: "\t\n"
-  multiline1:
+  multiline1: 
     '''
     first line
       indented line
     last line
     '''
-  multiline2:
+  multiline2: 
     '''
     first line
       indented line
     last line
     '''
-  multiline3:
+  multiline3: 
     '''
     first line
       indented line
@@ -51,21 +51,7 @@
     yes: true
     no: false
     null: null
-    array:
-    [
-      1
-      2
-      3
-      4
-      5
-      6
-      7
-      8
-      9
-      0
-      -1
-      0.5
-    ]
+    array: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -1, 0.5 ]
   }
   special:
   {

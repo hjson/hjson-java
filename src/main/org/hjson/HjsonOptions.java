@@ -27,11 +27,24 @@ package org.hjson;
 public class HjsonOptions {
 
   private IHjsonDsfProvider[] dsf;
+  private boolean outputComments;
   private boolean legacyRoot;
+  private boolean bracesSameLine;
+  private boolean allowCondense;
+  private boolean allowMultiVal;
+  private boolean emitRootBraces;
+  private String space, commentSpace;
 
   public HjsonOptions() {
     dsf=new IHjsonDsfProvider[0];
     legacyRoot=true;
+    bracesSameLine=false;
+    allowCondense=true;
+    allowMultiVal=true;
+    emitRootBraces=false;
+    space="  ";
+    commentSpace="";
+    outputComments=false;
   }
 
   /**
@@ -45,8 +58,9 @@ public class HjsonOptions {
    * Sets the DSF providers.
    *
    * @param value value
+   * @return this, to enable chaining
    */
-  public void setDsfProviders(IHjsonDsfProvider[] value) { dsf=value.clone(); }
+  public HjsonOptions setDsfProviders(IHjsonDsfProvider... value) { dsf=value.clone(); return this; }
 
   /**
    * Detects whether objects without root braces are supported.
@@ -59,25 +73,140 @@ public class HjsonOptions {
    * Sets whether root braces should be emitted.
    *
    * @param value value
+   * @return this, to enable chaining
    */
-  public void setParseLegacyRoot(boolean value) { legacyRoot=value; }
+  public HjsonOptions setParseLegacyRoot(boolean value) { legacyRoot=value; return this; }
 
   /**
    * Detects whether root braces should be emitted.
    *
-   * @deprecated will always return true.
    * @return <code>true</code> if this feature is enabled.
    */
-  @Deprecated
-  public boolean getEmitRootBraces() { return true; }
+  public boolean getEmitRootBraces() { return emitRootBraces; }
 
   /**
    * Sets whether root braces should be emitted.
    *
-   * @deprecated root braces are always emitted.
    * @param value value
+   * @return this, to enable chaining
    */
-  @Deprecated
-  public void setEmitRootBraces(boolean value) { }
+  public HjsonOptions setEmitRootBraces(boolean value) { emitRootBraces=value; return this; }
 
+  /**
+   * Detects whether braces and brackets should be placed on new lines.
+   *
+   * @return whether braces and brackets follow the KR / Java syntax.
+   */
+  public boolean bracesSameLine() { return bracesSameLine; }
+
+  /**
+   * Sets whether braces and brackets should be placed on new lines.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setBracesSameLine(boolean value) { bracesSameLine=value; return this; }
+
+  /**
+   * Detects whether more than one value is ever allowed on a single line.
+   *
+   * @return <code>true</code> if more than one value is allowed.
+   */
+  public boolean getAllowMultiVal() { return allowMultiVal; }
+
+  /**
+   * Sets whether more than one value is ever allowed to be placed on a single line.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setAllowMultiVal(boolean value) { allowMultiVal=value; return this; }
+
+  /**
+   * Detects whether objects an arrays are allowed to be displayed on a single line.
+   *
+   * @return <code>true</code> if objects and arrays can be displayed on a single line.
+   */
+  public boolean getAllowCondense() { return allowCondense; }
+
+  /**
+   * Sets whether objects and arrays can be displayed on a single line.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setAllowCondense(boolean value) { allowCondense=value; return this; }
+
+  /**
+   * Gets the characters to be placed per-level on each new line.
+   *
+   * @return the number of spaces.
+   */
+  public String getSpace() { return space; }
+
+  /**
+   * Sets the characters to be placed per-level on each new line.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setSpace(String value) { space=value; return this; }
+
+  /**
+   * Sets the number of spaces to be placed per-level on each new line.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setSpace(int value) { space=numSpaces(value); return this; }
+
+  /**
+   * Gets the characters to be placed before comments on new lines.
+   *
+   * @return the number of spaces.
+   */
+  public String getCommentSpace() { return commentSpace; }
+
+  /**
+   * Sets the characters to be placed before comments on new lines.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setCommentSpace(String value) { commentSpace=value; return this; }
+
+  /**
+   * Sets the number of spaces to be placed before comments on new lines.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setCommentSpace(int value) { commentSpace=numSpaces(value); return this; }
+
+  /**
+   * Generates a String object based on the input number of spaces.
+   *
+   * @param value value
+   * @return a string containing the input number of spaces.
+   */
+  private String numSpaces(int value) {
+    StringBuilder sb = new StringBuilder();
+    for (int i=0; i<value; i++) { sb.append(' '); }
+    return sb.toString();
+  }
+
+  /**
+   * Sets whether comments are enabled on the output.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setOutputComments(boolean value) { outputComments = value; return this; }
+
+  /**
+   * Gets whether comments are enabled on the output.
+   *
+   * @return whether comments are enabled
+   */
+  public boolean getOutputComments() { return outputComments; }
 }

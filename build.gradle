@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-version = '3.0.0'
+version = '3.0.0-C1'
 group = 'org.hjson'
 description = """Hjson, the Human JSON."""
 
@@ -13,13 +13,13 @@ sourceSets {
       srcDir 'src/main'
     }
   }
-  test {
-    java {
-      srcDir 'src/test'
-    }
-    resources {
-      srcDir 'assets'
-    }
+  test {	
+    java {	
+      srcDir 'src/test'	
+    }	
+    resources {	
+      srcDir 'assets'	
+    }	
   }
 }
 

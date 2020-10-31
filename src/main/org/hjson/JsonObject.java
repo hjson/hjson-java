@@ -24,14 +24,9 @@ package org.hjson;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.hjson.JsonObject.Member;
-
 
 /**
  * Represents a JSON object, a set of name/value pairs, where the names are strings and the values
@@ -77,6 +72,8 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   private final List<String> names;
   private final List<JsonValue> values;
   private transient HashIndexTable table;
+  private transient boolean condensed;
+  private transient int lineLength;
 
   /**
    * Creates a new empty JsonObject.
@@ -85,6 +82,8 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     names=new ArrayList<String>();
     values=new ArrayList<JsonValue>();
     table=new HashIndexTable();
+    condensed=false;
+    lineLength=1;
   }
 
   /**
@@ -107,6 +106,8 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
       values=new ArrayList<JsonValue>(object.values);
     }
     table=new HashIndexTable();
+    condensed=object.condensed;
+    lineLength=object.lineLength;
     updateHashIndex();
   }
 
@@ -128,6 +129,16 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Returns whether the input key is contained within this object.
+   *
+   * @param name The name of the key to search for.
+   * @return whether the key exists.
+   */
+  public boolean has(String name) {
+    return indexOf(name)!=-1;
+  }
+
+  /**
    * Appends a new member to the end of this object, with the specified name and the JSON
    * representation of the specified <code>int</code> value.
    * <p>
@@ -146,8 +157,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, int value) {
-    add(name, valueOf(value));
-    return this;
+    return add(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #add(String, int)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject add(String name, int value, String comment) {
+    return add(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -169,8 +195,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, long value) {
-    add(name, valueOf(value));
-    return this;
+    return add(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #add(String, long)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject add(String name, long value, String comment) {
+    return add(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -192,8 +233,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, float value) {
-    add(name, valueOf(value));
-    return this;
+    return add(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #add(String, float)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject add(String name, float value, String comment) {
+    return add(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -215,8 +271,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, double value) {
-    add(name, valueOf(value));
-    return this;
+    return add(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #add(String, double)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject add(String name, double value, String comment) {
+    return add(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -238,8 +309,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, boolean value) {
-    add(name, valueOf(value));
-    return this;
+    return add(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #add(String, boolean)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject add(String name, boolean value, String comment) {
+    return add(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -261,8 +347,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, String value) {
-    add(name, valueOf(value));
-    return this;
+    return add(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #add(String, int)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject add(String name, String value, String comment) {
+    return add(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -297,6 +398,26 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Variant of {@link #add(String, JsonValue)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject add(String name, JsonValue value, String comment) {
+    if (value==null) {
+      throw new NullPointerException("value is null");
+    }
+    value.setComment(comment);
+    return add(name, value);
+  }
+
+  /**
    * Sets the value of the member with the specified name to the JSON representation of the
    * specified <code>int</code> value. If this object does not contain a member with this name, a
    * new member is added at the end of the object. If this object contains multiple members with
@@ -314,8 +435,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject set(String name, int value) {
-    set(name, valueOf(value));
-    return this;
+    return set(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #set(String, int)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject set(String name, int value, String comment) {
+    return set(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -336,8 +472,22 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject set(String name, long value) {
-    set(name, valueOf(value));
-    return this;
+    return set(name, valueOf(value));
+  }
+  /**
+   * Variant of {@link #set(String, long)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject set(String name, long value, String comment) {
+    return set(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -358,8 +508,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject set(String name, float value) {
-    set(name, valueOf(value));
-    return this;
+    return set(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #set(String, float)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject set(String name, float value, String comment) {
+    return set(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -380,8 +545,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject set(String name, double value) {
-    set(name, valueOf(value));
-    return this;
+    return set(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #set(String, double)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject set(String name, double value, String comment) {
+    return set(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -402,8 +582,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject set(String name, boolean value) {
-    set(name, valueOf(value));
-    return this;
+    return set(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #set(String, boolean)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject set(String name, boolean value, String comment) {
+    return set(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -424,8 +619,23 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject set(String name, String value) {
-    set(name, valueOf(value));
-    return this;
+    return set(name, valueOf(value));
+  }
+
+  /**
+   * Variant of {@link #set(String, String)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject set(String name, String value, String comment) {
+    return set(name, valueOf(value).setComment(comment));
   }
 
   /**
@@ -451,6 +661,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     if (value==null) {
       throw new NullPointerException("value is null");
     }
+    value.setAccessed(true);
     int index=indexOf(name);
     if (index!=-1) {
       values.set(index, value);
@@ -459,6 +670,59 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
       names.add(name);
       values.add(value);
     }
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(String, JsonValue)} which appends a standard comment before the beginning of
+   * this value.
+   *
+   * @param name
+   *          the name of the member to add
+   * @param value
+   *          the value of the member to add
+   * @param comment
+   *          the string to be used as this value's comment
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject set(String name, JsonValue value, String comment) {
+    if (value==null) {
+      throw new NullPointerException("value is null");
+    }
+    return set(name, value.setComment(comment));
+  }
+
+  /**
+   * Locates a member of this object according to the key <code>name</code> and appends a standard, BOL
+   * comment.
+   *
+   * @param name
+   *          the name of the member to be altered.
+   * @param comment
+   *          the value to set as this member's comment.
+   * @return the object itself to enable chaining.
+   */
+  public JsonObject setComment(String name, String comment) {
+    get(name).setComment(comment);
+    return this;
+  }
+
+  /**
+   * Locates a member of this object according to the key <code>name</code> and appends a new comment
+   * according to the input parameters.
+   *
+   * @param name
+   *          The name of the member to be altered.
+   * @param type
+   *          The where the comment should be placed relative to its value.
+   * @param style
+   *          The style to use, i.e. <code>#</code>, <code>//</code>, etc.
+   * @param comment
+   *          the value to set as this member's comment.
+   * @return the object itself to enable chaining.
+   */
+  public JsonObject setComment(String name, CommentType type, CommentStyle style, String comment) {
+    get(name).setComment(type, style, comment);
     return this;
   }
 
@@ -498,7 +762,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
       throw new NullPointerException("name is null");
     }
     int index=indexOf(name);
-    return index!=-1 ? values.get(index) : null;
+    return index!=-1 ? values.get(index).setAccessed(true) : null;
   }
 
   /**
@@ -641,6 +905,94 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    */
   public List<String> names() {
     return Collections.unmodifiableList(names);
+  }
+
+  /**
+   * Gets the number of elements to be displayed on a single line when this array is serialized.
+   *
+   * @return the number of elements per-line.
+   */
+  public int getLineLength() { return lineLength; }
+
+  /**
+   * Sets the number of elements to be displayed on a single line when this array is serialized.
+   * This does not check whether an incorrect comment syntax is used. As a result, you may wind
+   * up breaking your file when any element contains a single line comment.
+   *
+   * @param value
+   *           the number of elements to be displayed per-line.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject setLineLength(int value) { lineLength=value; return this; }
+
+  /**
+   * Detects whether this object is "condensed" i.e. whether it should be displayed entirely on
+   * one line.
+   *
+   * @return whether this object is condensed.
+   */
+  public boolean isCondensed() { return condensed; }
+
+  /**
+   * Sets whether this object should be "condensed," i.e. whether it should be displayed entirely on
+   * one line.
+   *
+   * @param value
+   *           whether this object should be condensed.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject setCondensed(boolean value) { condensed=value; return this; }
+
+  /**
+   * Generates a list of paths that have not yet been accessed in-code.
+   * @return the list of unused paths.
+   */
+  public List<String> getUnusedPaths() {
+    List<String> paths=new ArrayList<String>();
+    for (Member m : this) {
+      if (!m.value.isAccessed()) {
+        paths.add(m.name);
+      } //else {paths.add("*"+m.name);}
+      if (m.value.isObject()) {
+        for (String s : m.value.asObject().getUnusedPaths()) {
+          paths.add(m.name+"."+s);
+        }
+      } else if (m.value.isArray()) {
+        for (String s : m.value.asArray().getUnusedPaths()) {
+          paths.add(m.name+s);
+        }
+      }
+    }
+    return paths;
+  }
+
+  /**
+   * Sorts all members of this object according to their keys, in alphabetical order.
+   *
+   * @return the object itself, to enable chaining.
+   */
+  public JsonObject sort() {
+    // Collect all members into an array.
+    List<Member> members=new ArrayList<Member>();
+    for (Member m : this) {
+      members.add(m);
+    }
+    // Get the underlying array so it can be sorted.
+    Member[] membersArray=members.toArray(new Member[members.size()]);
+
+    // Sort the new array.
+    Arrays.sort(membersArray, new MemberComparator());
+
+    // Clear the original values.
+    names.clear();
+    values.clear();
+
+    // Re-add the values, now in order.
+    for (Member m : membersArray) {
+      add(m.name, m.value);
+    }
+
+    return this;
   }
 
   /**
@@ -827,6 +1179,13 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
     private int hashSlotfor (Object element) {
       return element.hashCode() & hashTable.length-1;
+    }
+  }
+
+  public static class MemberComparator implements Comparator<Member> {
+    @Override
+    public int compare(Member m1, Member m2) {
+      return m1.name.compareToIgnoreCase(m2.name);
     }
   }
 }

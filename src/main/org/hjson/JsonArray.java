@@ -22,8 +22,6 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -66,12 +64,16 @@ import java.util.List;
 public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   private final List<JsonValue> values;
+  private transient boolean condensed;
+  private transient int lineLength;
 
   /**
    * Creates a new empty JsonArray.
    */
   public JsonArray() {
     values=new ArrayList<JsonValue>();
+    condensed=false;
+    lineLength=1;
   }
 
   /**
@@ -93,6 +95,8 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
     } else {
       values=new ArrayList<JsonValue>(array.values);
     }
+    condensed=array.condensed;
+    lineLength=array.lineLength;
   }
 
   /**
@@ -112,6 +116,19 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Unsafe. Returns a raw list of the objects contained within this array. For compatibiliity with
+   * other config wrappers.
+   * @return the array as a list of raw objects.
+   */
+  public List<Object> asRawList() {
+    final List<Object> array=new ArrayList<>();
+    for (JsonValue value : this) {
+      array.add(value.asRaw());
+    }
+    return array;
+  }
+
+  /**
    * Appends the JSON representation of the specified <code>int</code> value to the end of this
    * array.
    *
@@ -121,6 +138,20 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    */
   public JsonArray add(int value) {
     values.add(valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #add(int)} which appends a standard, BOL comment to the new value.
+   *
+   * @param value
+   *          the value to add to the aray.
+   * @param comment
+   *          the value to be used as this element's comment.
+   * @return the array itself, to enable method chaining.
+   */
+  public JsonArray add(int value, String comment) {
+    values.add(valueOf(value).setComment(comment));
     return this;
   }
 
@@ -138,6 +169,20 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Variant of {@link #add(long)} which appends a standard, BOL comment to the new value.
+   *
+   * @param value
+   *          the value to add to the aray.
+   * @param comment
+   *          the value to be used as this element's comment.
+   * @return the array itself, to enable method chaining.
+   */
+  public JsonArray add(long value, String comment) {
+    values.add(valueOf(value).setComment(comment));
+    return this;
+  }
+
+  /**
    * Appends the JSON representation of the specified <code>float</code> value to the end of this
    * array.
    *
@@ -147,6 +192,20 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    */
   public JsonArray add(float value) {
     values.add(valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #add(float)} which appends a standard, BOL comment to the new value.
+   *
+   * @param value
+   *          the value to add to the aray.
+   * @param comment
+   *          the value to be used as this element's comment.
+   * @return the array itself, to enable method chaining.
+   */
+  public JsonArray add(float value, String comment) {
+    values.add(valueOf(value).setComment(comment));
     return this;
   }
 
@@ -164,6 +223,20 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Variant of {@link #add(double)} which appends a standard, BOL comment to the new value.
+   *
+   * @param value
+   *          the value to add to the aray.
+   * @param comment
+   *          the value to be used as this element's comment.
+   * @return the array itself, to enable method chaining.
+   */
+  public JsonArray add(double value, String comment) {
+    values.add(valueOf(value).setComment(comment));
+    return this;
+  }
+
+  /**
    * Appends the JSON representation of the specified <code>boolean</code> value to the end of this
    * array.
    *
@@ -177,6 +250,20 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Variant of {@link #add(boolean)} which appends a standard, BOL comment to the new value.
+   *
+   * @param value
+   *          the value to add to the aray.
+   * @param comment
+   *          the value to be used as this element's comment.
+   * @return the array itself, to enable method chaining.
+   */
+  public JsonArray add(boolean value, String comment) {
+    values.add(valueOf(value).setComment(comment));
+    return this;
+  }
+
+  /**
    * Appends the JSON representation of the specified string to the end of this array.
    *
    * @param value
@@ -185,6 +272,20 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    */
   public JsonArray add(String value) {
     values.add(valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #add(String)} which appends a standard, BOL comment to the new value.
+   *
+   * @param value
+   *          the value to add to the aray.
+   * @param comment
+   *          the value to be used as this element's comment.
+   * @return the array itself, to enable method chaining.
+   */
+  public JsonArray add(String value, String comment) {
+    values.add(valueOf(value).setComment(comment));
     return this;
   }
 
@@ -204,6 +305,20 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Variant of {@link #add(JsonValue)} which appends a standard, BOL comment to the new value.
+   *
+   * @param value
+   *          the value to add to the aray.
+   * @param comment
+   *          the value to be used as this element's comment.
+   * @return the array itself, to enable method chaining.
+   */
+  public JsonArray add(JsonValue value, String comment) {
+    values.add(value.setComment(comment));
+    return this;
+  }
+
+  /**
    * Replaces the element at the specified position in this array with the JSON representation of
    * the specified <code>int</code> value.
    *
@@ -217,7 +332,26 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, int value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(int, int)} which appends a standard, BOL comment to the value.
+   *
+   * @param index
+   *          the index of the array element to replace
+   * @param value
+   *          the value to be stored at the specified array position
+   * @param comment
+   *          the value to be used as the comment for this element.
+   * @return the array itself, to enable method chaining
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range, i.e. <code>index &lt; 0</code> or
+   *           <code>index &gt;= size</code>
+   */
+  public JsonArray set(int index, int value, String comment) {
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -235,7 +369,26 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, long value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(int, long)} which appends a standard, BOL comment to the value.
+   *
+   * @param index
+   *          the index of the array element to replace
+   * @param value
+   *          the value to be stored at the specified array position
+   * @param comment
+   *          the value to be used as the comment for this element.
+   * @return the array itself, to enable method chaining
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range, i.e. <code>index &lt; 0</code> or
+   *           <code>index &gt;= size</code>
+   */
+  public JsonArray set(int index, long value, String comment) {
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -253,7 +406,26 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, float value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(int, float)} which appends a standard, BOL comment to the value.
+   *
+   * @param index
+   *          the index of the array element to replace
+   * @param value
+   *          the value to be stored at the specified array position
+   * @param comment
+   *          the value to be used as the comment for this element.
+   * @return the array itself, to enable method chaining
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range, i.e. <code>index &lt; 0</code> or
+   *           <code>index &gt;= size</code>
+   */
+  public JsonArray set(int index, float value, String comment) {
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -271,7 +443,26 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, double value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(int, double)} which appends a standard, BOL comment to the value.
+   *
+   * @param index
+   *          the index of the array element to replace
+   * @param value
+   *          the value to be stored at the specified array position
+   * @param comment
+   *          the value to be used as the comment for this element.
+   * @return the array itself, to enable method chaining
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range, i.e. <code>index &lt; 0</code> or
+   *           <code>index &gt;= size</code>
+   */
+  public JsonArray set(int index, double value, String comment) {
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -289,7 +480,26 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, boolean value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(int, boolean)} which appends a standard, BOL comment to the value.
+   *
+   * @param index
+   *          the index of the array element to replace
+   * @param value
+   *          the value to be stored at the specified array position
+   * @param comment
+   *          the value to be used as the comment for this element.
+   * @return the array itself, to enable method chaining
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range, i.e. <code>index &lt; 0</code> or
+   *           <code>index &gt;= size</code>
+   */
+  public JsonArray set(int index, boolean value, String comment) {
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -307,7 +517,26 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, String value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(int, String)} which appends a standard, BOL comment to the value.
+   *
+   * @param index
+   *          the index of the array element to replace
+   * @param value
+   *          the value to be stored at the specified array position
+   * @param comment
+   *          the value to be used as the comment for this element.
+   * @return the array itself, to enable method chaining
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range, i.e. <code>index &lt; 0</code> or
+   *           <code>index &gt;= size</code>
+   */
+  public JsonArray set(int index, String value, String comment) {
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -327,7 +556,63 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
     if (value==null) {
       throw new NullPointerException("value is null");
     }
-    values.set(index, value);
+    values.set(index, value).setAccessed(true);
+    return this;
+  }
+
+  /**
+   * Variant of {@link #set(int, JsonValue)} which appends a standard, BOL comment to the value.
+   *
+   * @param index
+   *          the index of the array element to replace
+   * @param value
+   *          the value to be stored at the specified array position
+   * @param comment
+   *          the value to be used as the comment for this element.
+   * @return the array itself, to enable method chaining
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range, i.e. <code>index &lt; 0</code> or
+   *           <code>index &gt;= size</code>
+   */
+  public JsonArray set(int index, JsonValue value, String comment) {
+    if (value==null) {
+      throw new NullPointerException("value is null");
+    }
+    values.set(index, value.setComment(comment));
+    return this;
+  }
+
+  /**
+   * Locates a member of this object according to the index and appends a standard, BOL
+   * comment.
+   *
+   * @param index
+   *          the index of the member to be altered.
+   * @param comment
+   *          the value to set as this member's comment.
+   * @return the array itself to enable chaining.
+   */
+  public JsonArray setComment(int index, String comment) {
+    get(index).setComment(comment);
+    return this;
+  }
+
+  /**
+   * Locates a member of this object according to the index and appends a new comment
+   * according to the input parameters.
+   *
+   * @param index
+   *          The index of the member to be altered.
+   * @param type
+   *          The where the comment should be placed relative to its value.
+   * @param style
+   *          The style to use, i.e. <code>#</code>, <code>//</code>, etc.
+   * @param comment
+   *          the value to set as this member's comment.
+   * @return the array itself to enable chaining.
+   */
+  public JsonArray setComment(int index, CommentType type, CommentStyle style, String comment) {
+    get(index).setComment(type, style, comment);
     return this;
   }
 
@@ -375,7 +660,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonValue get(int index) {
-    return values.get(index);
+    return values.get(index).setAccessed(true);
   }
 
   /**
@@ -387,6 +672,60 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    */
   public List<JsonValue> values() {
     return Collections.unmodifiableList(values);
+  }
+
+  /**
+   * Gets the number of elements to be displayed on a single line when this array is serialized.
+   *
+   * @return the number of elements per-line.
+   */
+  public int getLineLength() { return lineLength; }
+
+  /**
+   * Sets the number of elements to be displayed on a single line when this array is serialized.
+   * This does not check whether an incorrect comment syntax is used. As a result, you may wind
+   * up breaking your file when any element contains a single line comment.
+   *
+   * @param value
+   *           the number of elements to be displayed per-line.
+   * @return this, to enable chaining
+   */
+  public JsonArray setLineLength(int value) { lineLength=value; return this; }
+
+  /**
+   * Detects whether this array is "condensed" i.e. whether it should be displayed entirely on
+   * one line.
+   *
+   * @return whether this array is condensed.
+   */
+  public boolean isCondensed() { return condensed; }
+
+  /**
+   * Sets whether this array should be "condensed," i.e. whether it should be displayed entirely on
+   * one line.
+   *
+   * @param value
+   *           whether this array should be condensed.
+   * @return this, to enable chaining
+   */
+  public JsonArray setCondensed(boolean value) { condensed=value; return this; }
+
+  /**
+   * Generates a list of paths that have not yet been accessed in-code.
+   * @return the list of unused paths.
+   */
+  public List<String> getUnusedPaths() {
+    List<String> paths=new ArrayList<String>();
+    int index=0;
+    for (JsonValue v : this) {
+      if (v.isObject()) {
+        for (String s : v.asObject().getUnusedPaths()) {
+          paths.add("["+index+"]."+s);
+        }
+      }
+      index++;
+    }
+    return paths;
   }
 
   /**

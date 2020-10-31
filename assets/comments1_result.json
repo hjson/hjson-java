@@ -1,0 +1,67 @@
+{
+  "numPenguins": 417,
+  "anotherNum": 24,
+  "randString": "info",
+  "complicatedObject":
+  {
+    "apples": 12,
+    "bananas": 14
+  },
+  "arrayOfNums":
+  [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "multiLine":
+  [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "averageLines":
+  [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "matrix":
+  [
+    [
+      1,
+      2,
+      3
+    ],
+    [
+      4,
+      5,
+      6
+    ],
+    [
+      7,
+      8,
+      9
+    ]
+  ],
+  "multiLineObj":
+  {
+    "value1": 1,
+    "value2": 2,
+    "value3": "three",
+    "value4": 4
+  },
+  "unnecessaryQuotes":
+  {
+    "numPenguins": 36,
+    "numPolarBears": "twenty-four"
+  },
+  "multiLineString": "test\nand more test\nand still more"
+}

@@ -22,17 +22,11 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.io.IOException;
-
 
 @SuppressWarnings("serial") // use default serial UID
 class JsonLiteral extends JsonValue {
 
   enum Iv { T, F, N };
-
-  static final JsonValue NULL=new JsonLiteral(Iv.N);
-  static final JsonValue TRUE=new JsonLiteral(Iv.T);
-  static final JsonValue FALSE=new JsonLiteral(Iv.F);
 
   private final Iv value;
 
@@ -48,6 +42,18 @@ class JsonLiteral extends JsonValue {
       case N: return "null";
       default: return null;
     }
+  }
+
+  public static JsonLiteral jsonNull() {
+    return new JsonLiteral(Iv.N);
+  }
+
+  public static JsonLiteral jsonTrue() {
+    return new JsonLiteral(Iv.T);
+  }
+
+  public static JsonLiteral jsonFalse() {
+    return new JsonLiteral(Iv.F);
   }
 
   @Override
