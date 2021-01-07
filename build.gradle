@@ -4,8 +4,8 @@ version = '3.0.0'
 group = 'org.hjson'
 description = """Hjson, the Human JSON."""
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 sourceSets {
   main {
