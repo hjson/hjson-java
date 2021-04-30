@@ -1,8 +1,19 @@
-.DS_Store
-gradle
+# Gradle
 .gradle/
+build/
+
+gradle
 gradlew
 gradle.bat
-build/
-hjson.iml
+
+# IntelliJ
+*.iml
 .idea
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# MacOS
+.DS_Store
