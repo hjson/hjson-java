@@ -1,3 +1,11 @@
+# PersonTheCat/hjson-java
+
+### Modified version of hjson-java which supports parsing and editing comments in code.
+
+Note that this repository is currently extremely experimental. I am planning a full rewrite from scratch in the coming months. 
+This will enable storing whitespace and other formatting info, additional data types, and some miscellaneous moderinizations
+to the project to bring it up to spec with Java 8.
+
 # hjson-java
  
 [![Build Status](https://img.shields.io/travis/hjson/hjson-java.svg?style=flat-square)](http://travis-ci.org/hjson/hjson-java)
