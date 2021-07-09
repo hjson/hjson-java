@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-
 /**
  * Represents a JSON array, an ordered collection of JSON values.
  * <p>
@@ -59,7 +58,6 @@ import java.util.List;
  * This class is <strong>not supposed to be extended</strong> by clients.
  * </p>
  */
-@SuppressWarnings("serial")
 // use default serial UID
 public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
@@ -617,6 +615,25 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Marks every value in this array as being accessed or not accessed.
+   *
+   * @param b
+   *         whether to mark each field as accessed.
+   * @return the array itself, to enable chaining.
+   */
+  public JsonArray setAllAccessed(boolean b) {
+    for (JsonValue value : this) {
+      value.setAccessed(b);
+      if (value.isObject()) {
+        value.asObject().setAllAccessed(b);
+      } else if (value.isArray()) {
+        value.asArray().setAllAccessed(b);
+      }
+    }
+    return this;
+  }
+
+  /**
    * Removes the element at the specified index from this array.
    *
    * @param index
@@ -650,6 +667,31 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Clears every element from this array.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @return the array itself, to enable method chaining
+   */
+  public JsonArray clear() {
+    values.clear();
+    return this;
+  }
+
+  /**
+   * Adds every value from another array.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @param array The array to copy values from.
+   * @return the array itself, to enable method chaining
+   */
+  public JsonArray addAll(JsonArray array) {
+    for (JsonValue value : array) {
+      add(value);
+    }
+    return this;
+  }
+
+  /**
    * Returns the value of the element at the specified position in this array.
    *
    * @param index
@@ -661,6 +703,28 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    */
   public JsonValue get(int index) {
     return values.get(index).setAccessed(true);
+  }
+
+  /**
+   * Returns whether this array contains a value.
+   *
+   * @param value The value to search for.
+   * @return <code>true</code> if this array contains the value.
+   */
+  public boolean contains(JsonValue value) {
+    return values.contains(value);
+  }
+
+  /**
+   * Returns whether this array contains a value of unknown type.
+   *
+   * Todo: implement concrete functions for other known types.
+   *
+   * @param value The value to search for.
+   * @return <code>true</code> if this array contains the value.
+   */
+  public boolean contains(Object value) {
+    return contains(JsonValue.valueOf(value));
   }
 
   /**
@@ -715,11 +779,29 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    * @return the list of unused paths.
    */
   public List<String> getUnusedPaths() {
-    List<String> paths=new ArrayList<String>();
+    return this.getUsedPaths(false);
+  }
+
+  /**
+   * Generates a list of paths that <em>have</em> been accessed in-code.
+   * @return the list of unused paths.
+   */
+  public List<String> getUsedPaths() {
+    return this.getUsedPaths(true);
+  }
+
+  /**
+   * Generates a list of paths that either have or have not been accessed in-code.
+   *
+   * @param used whether the value should have been accessed.
+   * @return the list of unused paths.
+   */
+  public List<String> getUsedPaths(boolean used) {
+    final List<String> paths=new ArrayList<>();
     int index=0;
     for (JsonValue v : this) {
       if (v.isObject()) {
-        for (String s : v.asObject().getUnusedPaths()) {
+        for (String s : v.asObject().getUsedPaths(used)) {
           paths.add("["+index+"]."+s);
         }
       }

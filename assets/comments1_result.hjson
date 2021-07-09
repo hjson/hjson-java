@@ -55,8 +55,8 @@
   # be correctly quoted, when necessary.
   multiLineObj:
   {
-    "value1": 1, "value2": 2
-    "value3": "three", "value4": 4
+    value1: 1, value2: 2
+    value3: "three", value4: 4
   }
   # Unnecessary quotes will be removed.
   unnecessaryQuotes:

@@ -22,8 +22,6 @@
  ******************************************************************************/
 package org.hjson;
 
-
-@SuppressWarnings("serial") // use default serial UID
 class JsonLiteral extends JsonValue {
 
   enum Iv { T, F, N };
@@ -58,7 +56,7 @@ class JsonLiteral extends JsonValue {
 
   @Override
   public int hashCode() {
-    return value.hashCode();
+    return super.hashCode() * 59 + value.hashCode();
   }
 
   @Override

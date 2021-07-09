@@ -21,7 +21,6 @@
  ******************************************************************************/
 package org.hjson;
 
-@SuppressWarnings("serial") // use default serial UID
 class JsonDsf extends JsonValue {
 
   private final Object value;

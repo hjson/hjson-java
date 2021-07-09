@@ -21,8 +21,6 @@
  ******************************************************************************/
 package org.hjson;
 
-import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -44,11 +42,6 @@ public class HjsonDsf
    * @return DSF provider
    */
   public static IHjsonDsfProvider hex(boolean stringify) { return new DsfHex(stringify); }
-  //  /**
-  //   * Returns a date DSF provider.
-  //   * @return DSF provider
-  //   */
-  //  public static IHjsonDsfProvider date() { return new DsfDate(); }
 
   static boolean isInvalidDsfChar(char c)
   {

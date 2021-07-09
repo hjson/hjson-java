@@ -24,7 +24,6 @@ package org.hjson;
 
 import java.math.BigDecimal;
 
-@SuppressWarnings("serial") // use default serial UID
 class JsonNumber extends JsonValue {
 
   private final double value;
@@ -78,7 +77,7 @@ class JsonNumber extends JsonValue {
 
   @Override
   public int hashCode() {
-    return Double.valueOf(value).hashCode();
+    return super.hashCode() * 59 + Double.valueOf(value).hashCode();
   }
 
   @Override

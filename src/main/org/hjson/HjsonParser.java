@@ -1,4 +1,5 @@
-/*******************************************************************************
+/*
+ ******************************************************************************
  * Copyright (c) 2013, 2015 EclipseSource.
  * Copyright (c) 2015-2017 Christian Zangl
  *
@@ -24,10 +25,8 @@ package org.hjson;
 
 import java.io.*;
 
+// Todo: Rewrite
 class HjsonParser {
-
-  private static final int MIN_BUFFER_SIZE=10;
-  private static final int DEFAULT_BUFFER_SIZE=1024;
 
   private final String buffer;
   private Reader reader;
@@ -37,9 +36,8 @@ class HjsonParser {
   private int current;
   private StringBuilder captureBuffer, peek;
   private boolean capture;
-  private boolean legacyRoot;
-
-  private IHjsonDsfProvider[] dsfProviders;
+  private final boolean legacyRoot;
+  private final IHjsonDsfProvider[] dsfProviders;
 
   HjsonParser(String string, HjsonOptions options) {
     buffer=string;
@@ -57,7 +55,7 @@ class HjsonParser {
     this(readToEnd(reader), options);
   }
 
-  static String readToEnd(Reader reader) throws IOException {
+  private static String readToEnd(Reader reader) throws IOException {
     // read everything into a buffer
     int n;
     char[] part=new char[8*1024];
@@ -66,7 +64,7 @@ class HjsonParser {
     return sb.toString();
   }
 
-  void reset() {
+  private void reset() {
     index=lineOffset=current=0;
     line=1;
     peek=new StringBuilder();
@@ -85,7 +83,7 @@ class HjsonParser {
     return value;
   }
 
-  JsonValue tryParse() throws IOException {
+  private JsonValue tryParse() throws IOException {
     // Braces for the root object are optional
     if (legacyRoot) {
       switch (current) {
@@ -101,10 +99,12 @@ class HjsonParser {
             reset();
             read();
             readBetweenVals();
-            try { return checkTrailing(readValue()); }
-            catch (Exception exception2) { }
-            // throw original error
-            throw exception;
+            try {
+              return checkTrailing(readValue());
+            } catch (Exception exception2) {
+              // throw original error
+              throw exception;
+            }
           }
       }
     } else {
@@ -112,7 +112,7 @@ class HjsonParser {
     }
   }
 
-  JsonValue checkTrailing(JsonValue v) throws ParseException, IOException {
+  private JsonValue checkTrailing(JsonValue v) throws ParseException, IOException {
     v.setFullComment(CommentType.EOL, readBetweenVals());
     if (!isEndOfText()) throw error("Extra characters in input: "+current);
     return v;
@@ -303,7 +303,7 @@ class HjsonParser {
         if (name.length()==0) throw error("Found ':' but no key name (for an empty key name use quotes)");
         else if (space>=0 && space!=name.length()) { index=start+space; throw error("Found whitespace in your key name (use quotes to include)"); }
         return name.toString();
-      } else if (isWhiteSpace(current)) {
+      } else if (isWhitespace(current)) {
         if (space<0) space=name.length();
       } else if (current<' ') {
         throw error("Name is not closed");
@@ -324,7 +324,7 @@ class HjsonParser {
 
     // skip white/to (newline)
     for (; ; ) {
-      if (isWhiteSpace(current) && current!='\n') read();
+      if (isWhitespace(current) && current!='\n') read();
       else break;
     }
     if (current=='\n') { read(); skipIndent(indent); }
@@ -362,7 +362,7 @@ class HjsonParser {
 
   private void skipIndent(int indent) throws IOException {
     while (indent-->0) {
-      if (isWhiteSpace(current) && current!='\n') read();
+      if (isWhitespace(current) && current!='\n') read();
       else break;
     }
   }
@@ -438,7 +438,7 @@ class HjsonParser {
     return ch>='0' && ch<='9';
   }
 
-  static JsonValue tryParseNumber(StringBuilder value, boolean stopAtNext) throws IOException {
+  static JsonValue tryParseNumber(StringBuilder value, boolean stopAtNext) {
     int idx=0, len=value.length();
     if (idx<len && value.charAt(idx)=='-') idx++;
 
@@ -468,7 +468,7 @@ class HjsonParser {
     }
 
     int last=idx;
-    while (idx<len && isWhiteSpace(value.charAt(idx))) idx++;
+    while (idx<len && isWhitespace(value.charAt(idx))) idx++;
 
     boolean foundStop=false;
     if (idx<len && stopAtNext) {
@@ -483,7 +483,7 @@ class HjsonParser {
     return new JsonNumber(Double.parseDouble(value.substring(0, last)));
   }
 
-  static JsonValue tryParseNumber(String value, boolean stopAtNext) throws IOException {
+  static JsonValue tryParseNumber(String value, boolean stopAtNext) {
     return tryParseNumber(new StringBuilder(value), stopAtNext);
   }
 
@@ -503,7 +503,7 @@ class HjsonParser {
     startCapture();
     while (!isEndOfText()) {
       pauseCapture();
-      skipWhiteSpace();
+      skipWhitespace();
       startCapture();
       if (current=='#' || current=='/' && peek()=='/') {
         do {
@@ -536,9 +536,9 @@ class HjsonParser {
     return endCapture().trim();
   }
 
-  private int skipWhiteSpace() throws IOException {
+  private int skipWhitespace() throws IOException {
     int numSkipped=0;
-    while (isWhiteSpace()) {
+    while (isWhitespace()) {
       read();
       numSkipped++;
     }
@@ -568,56 +568,69 @@ class HjsonParser {
       lineOffset=index;
     }
 
-    if (peek.length()>0)
-    {
+    if (peek.length()>0) {
       // normally peek will only hold not more than one character so this should not matter for performance
       current=peek.charAt(0);
       peek.deleteCharAt(0);
+    } else {
+      current=reader.read();
     }
-    else current=reader.read();
 
-    if (current<0) return false;
+    if (current<0) {
+      return false;
+    }
 
     index++;
 
-    if (capture) captureBuffer.append((char) current);
+    if (capture) {
+      captureBuffer.append((char) current);
+    }
 
     return true;
   }
 
   private void skip(int num) throws IOException {
     pauseCapture();
-    for (int i=0; i<num; i++) read();
+    for (int i=0; i<num; i++) {
+      read();
+    }
     startCapture();
   }
 
   private void skipIfWhiteSpace(int num) throws IOException {
     pauseCapture();
-    for (int i=0; i<num; i++) if (isWhiteSpace()) read();
+    for (int i = 0; i < num; i++) {
+      if (isWhitespace()) {
+        read();
+      }
+    }
     startCapture();
   }
 
   private void startCapture() {
-    if (captureBuffer==null)
-      captureBuffer=new StringBuilder();
-    capture=true;
+    if (captureBuffer == null) {
+      captureBuffer = new StringBuilder();
+    }
+    capture = true;
     captureBuffer.append((char)current);
   }
 
   private void pauseCapture() {
-    int len=captureBuffer.length();
-    if (len>0) captureBuffer.deleteCharAt(len-1);
-    capture=false;
+    int len = captureBuffer.length();
+    if (len > 0) {
+      captureBuffer.deleteCharAt(len - 1);
+    }
+    capture = false;
   }
 
   private String endCapture() {
     pauseCapture();
-    String captured;
-    if (captureBuffer.length()>0) {
-      captured=captureBuffer.toString();
+    final String captured;
+    if (captureBuffer.length() > 0) {
+      captured = captureBuffer.toString();
       captureBuffer.setLength(0);
     } else {
-      captured="";
+      captured = "";
     }
     capture=false;
     return captured;
@@ -627,41 +640,41 @@ class HjsonParser {
     if (isEndOfText()) {
       return error("Unexpected end of input");
     }
-    return error("Expected "+expected);
+    return error("Expected " + expected);
   }
 
   private ParseException error(String message) {
-    int column=index-lineOffset;
-    int offset=isEndOfText()?index:index-1;
-    return new ParseException(message, offset, line, column-1);
+    int column = index - lineOffset;
+    int offset = isEndOfText() ? index : index - 1;
+    return new ParseException(message, offset, line, column - 1);
   }
 
-  static boolean isWhiteSpace(int ch) {
-    return ch==' ' || ch=='\t' || ch=='\n' || ch=='\r';
+  static boolean isWhitespace(int ch) {
+    return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r';
   }
 
-  private boolean isWhiteSpace() {
-    return isWhiteSpace((char)current);
+  private boolean isWhitespace() {
+    return isWhitespace((char)current);
   }
 
   private boolean isHexDigit() {
-    return current>='0' && current<='9'
-            || current>='a' && current<='f'
-            || current>='A' && current<='F';
+    return current >= '0' && current <= '9'
+        || current >= 'a' && current <= 'f'
+        || current >= 'A' && current <= 'F';
   }
 
   private boolean isEndOfText() {
-    return current==-1;
+    return current == -1;
   }
 
   private static class ContainerData {
-    private int lineLength=1;
-    private int sumLineLength=0;
-    private int numLines=0;
+    private int lineLength = 1;
+    private int sumLineLength = 0;
+    private int numLines = 0;
     private boolean condensed;
 
     private ContainerData(boolean condensed) {
-      this.condensed=condensed;
+      this.condensed = condensed;
     }
 
     private void incrLineLength() {
@@ -679,25 +692,27 @@ class HjsonParser {
     }
 
     private int finalLineLength(int size) {
-      return sumLineLength>0 ? avgLineLength() : condensed ? size : 1;
+      return sumLineLength > 0 ? avgLineLength() : condensed ? size : 1;
     }
 
     private int avgLineLength() {
       int avgLineLength=sumLineLength/numLines;
-      if (avgLineLength<=0) avgLineLength=1;
+      if (avgLineLength<=0) {
+        avgLineLength=1;
+      }
       return avgLineLength;
     }
 
     private JsonArray into(JsonArray array) {
       return array
-              .setLineLength(finalLineLength(array.size()))
-              .setCondensed(condensed);
+          .setLineLength(finalLineLength(array.size()))
+          .setCondensed(condensed);
     }
 
     private JsonObject into(JsonObject object) {
       return object
-              .setLineLength(finalLineLength(object.size()))
-              .setCondensed(condensed);
+          .setLineLength(finalLineLength(object.size()))
+          .setCondensed(condensed);
     }
   }
 }

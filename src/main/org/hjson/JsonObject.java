@@ -129,6 +129,15 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Returns the list of keys contained within this object.
+   *
+   * @return the every name defined in the object.
+   */
+  public List<String> getNames() {
+    return names;
+  }
+
+  /**
    * Returns whether the input key is contained within this object.
    *
    * @param name The name of the key to search for.
@@ -410,11 +419,68 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, JsonValue value, String comment) {
-    if (value==null) {
-      throw new NullPointerException("value is null");
+    if (comment==null) {
+      throw new NullPointerException("comment is null");
     }
     value.setComment(comment);
     return add(name, value);
+  }
+
+  /**
+   * Variant of {@link #add(String, JsonValue)} which will insert a value at a particular position.
+   *
+   * Todo: decide whether to keep this before merging with hjson-java.
+   *
+   * @param index
+   *         the index where this value will be placed
+   * @param name
+   *         the name of the member to add
+   * @param value
+   *         the value of the member to add
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject insert(int index, String name, JsonValue value) {
+    if (name==null) {
+      throw new NullPointerException("name is null");
+    }
+    if (value==null) {
+      throw new NullPointerException("value is null");
+    }
+    // Collect all current members into an array;
+    final List<Member> members=new ArrayList<>();
+    for (Member m : this) {
+      members.add(m);
+    }
+    members.add(index, new Member(name, value));
+    // Reset everything.
+    clear();
+    // Re-add the values, now in the correct order.
+    for (Member m : members) {
+      add(m.name, m.value);
+    }
+    return this;
+  }
+
+  /**
+   * Variant of {@link #insert(int, String, JsonValue)} which includes a comment.
+   *
+   * @param index
+   *         the index where this value will be placed
+   * @param name
+   *         the name of the member to add
+   * @param value
+   *         the value of the member to add
+   * @param comment
+   *         the comment to set on the value.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject insert(int index, String name, JsonValue value, String comment) {
+    if (comment==null) {
+      throw new NullPointerException("comment is null");
+    }
+    value.setComment(comment);
+    insert(index, name, value);
+    return this;
   }
 
   /**
@@ -700,7 +766,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    *          the name of the member to be altered.
    * @param comment
    *          the value to set as this member's comment.
-   * @return the object itself to enable chaining.
+   * @return the object itself, to enable chaining.
    */
   public JsonObject setComment(String name, String comment) {
     get(name).setComment(comment);
@@ -719,10 +785,30 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    *          The style to use, i.e. <code>#</code>, <code>//</code>, etc.
    * @param comment
    *          the value to set as this member's comment.
-   * @return the object itself to enable chaining.
+   * @return the object itself, to enable chaining.
    */
   public JsonObject setComment(String name, CommentType type, CommentStyle style, String comment) {
     get(name).setComment(type, style, comment);
+    return this;
+  }
+
+  /**
+   * Marks every value in this object as being accessed or not accessed.
+   *
+   * @param b
+   *         whether to mark each field as accessed.
+   * @return the object itself, to enable chaining.
+   */
+  public JsonObject setAllAccessed(boolean b) {
+    for (Member m : this) {
+      final JsonValue value=m.value;
+      value.setAccessed(b);
+      if (value.isObject()) {
+        value.asObject().setAllAccessed(b);
+      } else if (value.isArray()) {
+        value.asArray().setAllAccessed(b);
+      }
+    }
     return this;
   }
 
@@ -897,6 +983,37 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Clears every element from this object.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject clear() {
+    names.clear();
+    values.clear();
+    table.clear();
+    return this;
+  }
+
+  /**
+   * Adds every member (key/value pair) from another object.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @param object The object to copy values from.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject addAll(JsonObject object) {
+    for (Member m : object) {
+      if (has(m.getName())) {
+        set(m.getName(), m.getValue());
+      } else {
+        add(m.getName(), m.getValue());
+      }
+    }
+    return this;
+  }
+
+  /**
    * Returns a list of the names in this object in document order. The returned list is backed by
    * this object and will reflect subsequent changes. It cannot be used to modify this object.
    * Attempts to modify the returned list will result in an exception.
@@ -948,17 +1065,35 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the list of unused paths.
    */
   public List<String> getUnusedPaths() {
-    List<String> paths=new ArrayList<String>();
+    return this.getUsedPaths(false);
+  }
+
+  /**
+   * Generates a list of paths that <em>have</em> been accessed in-code.
+   * @return the list of used paths.
+   */
+  public List<String> getUsedPaths() {
+    return this.getUsedPaths(true);
+  }
+
+  /**
+   * Generates a list of paths that either have or have not been accessed in-code.
+   *
+   * @param used whether the path should have been accessed.
+   * @return the list of used paths.
+   */
+  public List<String> getUsedPaths(boolean used) {
+    final List<String> paths=new ArrayList<String>();
     for (Member m : this) {
-      if (!m.value.isAccessed()) {
+      if (used == m.value.isAccessed()) {
         paths.add(m.name);
       } //else {paths.add("*"+m.name);}
       if (m.value.isObject()) {
-        for (String s : m.value.asObject().getUnusedPaths()) {
+        for (String s : m.value.asObject().getUsedPaths(used)) {
           paths.add(m.name+"."+s);
         }
       } else if (m.value.isArray()) {
-        for (String s : m.value.asArray().getUnusedPaths()) {
+        for (String s : m.value.asArray().getUsedPaths(used)) {
           paths.add(m.name+s);
         }
       }
@@ -973,19 +1108,18 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    */
   public JsonObject sort() {
     // Collect all members into an array.
-    List<Member> members=new ArrayList<Member>();
+    List<Member> members=new ArrayList<>();
     for (Member m : this) {
       members.add(m);
     }
     // Get the underlying array so it can be sorted.
-    Member[] membersArray=members.toArray(new Member[members.size()]);
+    Member[] membersArray=members.toArray(new Member[0]);
 
     // Sort the new array.
     Arrays.sort(membersArray, new MemberComparator());
 
     // Clear the original values.
-    names.clear();
-    values.clear();
+    clear();
 
     // Re-add the values, now in order.
     for (Member m : membersArray) {
@@ -1179,6 +1313,10 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
     private int hashSlotfor (Object element) {
       return element.hashCode() & hashTable.length-1;
+    }
+
+    private void clear() {
+      Arrays.fill(hashTable, (byte) 0);
     }
   }
 

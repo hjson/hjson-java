@@ -31,25 +31,28 @@ public interface IHjsonDsfProvider
    *
    * @return name
    */
-  public String getName();
+  String getName();
+
   /**
    * Gets the description of this DSF.
    *
    * @return description
    */
-  public String getDescription();
+  String getDescription();
+
   /**
    * Tries to parse the text as a DSF value.
    *
    * @param text the DSF value
    * @return JsonValue
    */
-  public JsonValue parse(String text);
+  JsonValue parse(String text);
+
   /**
    * Stringifies DSF values.
    *
    * @param value the JSON value
    * @return string
    */
-  public String stringify(JsonValue value);
+  String stringify(JsonValue value);
 }

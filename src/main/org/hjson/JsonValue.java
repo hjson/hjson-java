@@ -72,7 +72,12 @@ public abstract class JsonValue implements Serializable {
   /**
    * A flag indicating whether this value has been specifically called for.
    */
-  protected boolean accessed;
+  protected boolean accessed=false;
+
+  /**
+   * Indicates the number of empty lines above this value.
+   */
+  protected int numLines=0;
 
   /**
    * Gets the newline charater(s).
@@ -82,7 +87,7 @@ public abstract class JsonValue implements Serializable {
   public static String getEol() { return eol; }
 
   /**
-   * Sets the newline charater(s).
+   * Sets the newline character(s).
    *
    * @param value the eol value
    */
@@ -393,6 +398,20 @@ public abstract class JsonValue implements Serializable {
    */
   public JsonValue setAccessed(boolean b) {
     accessed=b;
+    return this;
+  }
+
+  /**
+   * Detects the number of empty lines before this value.
+   *
+   * @return the number of empty lines
+   */
+  public int getNumLines() {
+    return numLines;
+  }
+
+  public JsonValue setNumLines(int num) {
+    numLines=num;
     return this;
   }
 
@@ -778,7 +797,11 @@ public abstract class JsonValue implements Serializable {
 
   @Override
   public int hashCode() {
-    return super.hashCode();
+    int result = 1;
+    result *= 59 + (this.bolComment == null ? 43 : this.bolComment.hashCode());
+    result *= 59 + (this.eolComment == null ? 43 : this.eolComment.hashCode());
+    result *= 59 + (this.intComment == null ? 43 : this.intComment.hashCode());
+    return result;
   }
 
   static boolean isPunctuatorChar(int c) {

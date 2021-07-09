@@ -1,4 +1,5 @@
-/*******************************************************************************
+/*
+ ******************************************************************************
  * Copyright (c) 2015-2017 Christian Zangl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,15 +28,17 @@ import java.util.regex.Pattern;
 
 class HjsonWriter {
 
-  private IHjsonDsfProvider[] dsfProviders;
-  private boolean outputComments;
-  private boolean bracesSameLine;
-  private boolean allowCondense;
-  private boolean allowMultiVal;
-  private boolean emitRootBraces;
-  private String space, commentSpace;
+  private final IHjsonDsfProvider[] dsfProviders;
+  private final boolean outputComments;
+  private final boolean outputEmptyLines;
+  private final boolean bracesSameLine;
+  private final boolean allowCondense;
+  private final boolean allowMultiVal;
+  private final boolean emitRootBraces;
+  private final String space;
+  private final String commentSpace;
 
-  static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"']|//|/\\*");
+  private static final Pattern NEEDS_ESCAPE_NAME = Pattern.compile("[,{\\[}\\]\\s:#\"']|//|/\\*");
 
   public HjsonWriter(HjsonOptions options) {
     if (options!=null) {
@@ -46,6 +49,7 @@ class HjsonWriter {
       space=options.getSpace();
       commentSpace=options.getCommentSpace();
       outputComments=options.getOutputComments();
+      outputEmptyLines=options.getOutputEmptyLines();
       emitRootBraces=options.getEmitRootBraces();
     } else {
       dsfProviders=new IHjsonDsfProvider[0];
@@ -56,26 +60,25 @@ class HjsonWriter {
       space="  ";
       commentSpace="";
       outputComments=false;
+      outputEmptyLines=false;
     }
   }
 
   public HjsonWriter(HjsonOptions options, boolean outputComments) {
-    this(options);
-
-    this.outputComments = outputComments;
+    this((options==null?new HjsonOptions():options).setOutputComments(outputComments));
   }
 
-  void nl(Writer tw, int level) throws IOException {
+  private void nl(Writer tw, int level) throws IOException {
     tw.write(JsonValue.eol);
     indent(tw, level);
   }
 
-  void indent(Writer tw, int level) throws IOException {
+  private void indent(Writer tw, int level) throws IOException {
     for (int i=0; i<level; i++)
       tw.write(space);
   }
 
-  void indentComment(Writer tw) throws IOException {
+  private void indentComment(Writer tw) throws IOException {
     tw.write(commentSpace);
   }
 
@@ -92,16 +95,25 @@ class HjsonWriter {
     }
 
     // check for DSF
-    String dsfValue=HjsonDsf.stringify(dsfProviders, value);
+    final String dsfValue=HjsonDsf.stringify(dsfProviders, value);
     if (dsfValue!=null) {
       tw.write(separator);
       tw.write(dsfValue);
       return;
     }
 
-    // Write the header, if applicable.
-    if (outputComments && level==0 && value.hasBOLComment()) {
-      writeHeader(tw, value, level);
+    // Handle special cases at level 0.
+    if (level==0) {
+      // Write the empty lines, if applicable.
+      if (outputEmptyLines) {
+        for (int i=0; i<value.getNumLines(); i++) {
+          tw.write('\n');
+        }
+      }
+      // Write the header, if applicable.
+      if (outputComments && value.hasBOLComment()) {
+        writeHeader(tw, value, level);
+      }
     }
 
     switch (value.getType()) {
@@ -119,7 +131,7 @@ class HjsonWriter {
         break;
       case STRING:
         tw.write(separator);
-        writeString(value.asString(), tw, level, forceQuotes, separator);
+        writeString(value.asString(), tw, level, forceQuotes);
         break;
       default:
         tw.write(separator);
@@ -134,40 +146,51 @@ class HjsonWriter {
       writeEOLComment(tw, value, level);
     }
   }
-
-  void writeObject(JsonObject obj, Writer tw, int level, String separator, boolean noIndent) throws IOException {
+  private void writeObject(JsonObject obj, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
     boolean emitBraces = emitBraces(obj, level);
     if (!emitBraces) openContainer(tw, noIndent, obj.isCondensed(), level, separator, '{');
 
     int index=0;
     for (JsonObject.Member pair : obj) {
+      if (outputEmptyLines) {
+        for (int i=0; i<pair.getValue().getNumLines(); i++) {
+          tw.write('\n');
+        }
+      }
       if (outputComments && pair.getValue().hasBOLComment()) {
         writeBOLComment(tw, pair.getValue(), level);
       }
 
       handleContainerLines(tw, obj.isCondensed(), index, level, obj.getLineLength());
-      tw.write(escapeName(pair.getName(), forceQuoteObject(obj)));
+      tw.write(escapeName(pair.getName()));
       tw.write(":");
       boolean forceQuoteValue = forceQuoteValue(pair.getValue(), obj, outputComments);
       save(pair.getValue(), tw, level+1, " ", false, forceQuoteValue);
       index++;
     }
+    boolean forceNl=false;
     // Put interior comments at the bottom.
     if (outputComments && obj.hasInteriorComment()) {
       writeInteriorComment(tw, obj, level);
+      forceNl=true;
     }
     // We've reached the end of the container. Close it off.
-    if (!emitBraces) closeContainer(tw, obj.isCondensed(), obj.size(), level, '}');
+    if (!emitBraces) closeContainer(tw, forceNl, obj.isCondensed(), obj.size(), level, '}');
   }
 
-  void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent) throws IOException {
+  private void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
     openContainer(tw, noIndent, arr.isCondensed(), level, separator, '[');
 
     int n=arr.size();
     for (int i=0; i<n; i++) {
       JsonValue element = arr.get(i);
+      if (outputEmptyLines) {
+        for (int j=0; j<element.getNumLines(); j++) {
+          tw.write('\n');
+        }
+      }
       if (this.outputComments && element.hasBOLComment()) {
         writeBOLComment(tw, element, level);
       }
@@ -176,39 +199,41 @@ class HjsonWriter {
       boolean forceQuoteArray = forceQuoteArray(element, arr, outputComments);
       save(element, tw, level+1, "", true, forceQuoteArray);
     }
+    boolean forceNl=false;
     // Put the interior comments at the bottom.
     if (outputComments && arr.hasInteriorComment()) {
       writeInteriorComment(tw, arr, level);
+      forceNl=true;
     }
     // We've reached the end of the container. Close it off.
-    closeContainer(tw, arr.isCondensed(), n, level, ']');
+    closeContainer(tw, forceNl, arr.isCondensed(), n, level, ']');
   }
 
-  boolean emitBraces(JsonObject obj, int level) {
+  private boolean emitBraces(JsonObject obj, int level) {
     return emitRootBraces && level==0 && !(obj.hasBOLComment() && outputComments);
   }
 
-  void openContainer(Writer tw, boolean noIndent, boolean condensed, int level, String separator, char openWith) throws IOException {
+  private void openContainer(Writer tw, boolean noIndent, boolean condensed, int level, String separator, char openWith) throws IOException {
     if (!noIndent) { if (bracesSameLine || condensed) tw.write(separator); else nl(tw, level); }
     tw.write(openWith);
   }
 
-  void writeHeader(Writer tw, JsonValue value, int level) throws IOException {
+  private void writeHeader(Writer tw, JsonValue value, int level) throws IOException {
     writeComment(value.getBOLComment(), tw, level);
     nl(tw, level);
   }
 
-  void writeBOLComment(Writer tw, JsonValue value, int level) throws IOException {
+  private void writeBOLComment(Writer tw, JsonValue value, int level) throws IOException {
     nl(tw, level+1);
     writeComment(value.getBOLComment(), tw, level+1);
   }
 
-  void writeInteriorComment(Writer tw, JsonValue value, int level) throws IOException {
+  private void writeInteriorComment(Writer tw, JsonValue value, int level) throws IOException {
     nl(tw, level+1);
     writeComment(value.getInteriorComment(), tw, level+1);
   }
 
-  void writeEOLComment(Writer tw, JsonValue value, int level) throws IOException {
+  private void writeEOLComment(Writer tw, JsonValue value, int level) throws IOException {
     if (level==0) {
       // if level==0, this is a footer.
       nl(tw, level);
@@ -220,10 +245,10 @@ class HjsonWriter {
     }
   }
 
-  void handleContainerLines(Writer tw, boolean compact, int index, int level, int lineLength) throws IOException {
+  private void handleContainerLines(Writer tw, boolean compact, int index, int level, int lineLength) throws IOException {
     if (!allowMultiVal) {
       nl(tw, level+1);
-    } else if (index%lineLength==0) {
+    } else if (lineLength==0 || index%lineLength==0) {
       // NL every (lineLength) # lines.
       if (!(compact && allowCondense)) {
         nl(tw, level+1);
@@ -237,30 +262,28 @@ class HjsonWriter {
     }
   }
 
-  void closeContainer(Writer tw, boolean compact, int size, int level, char closeWith) throws IOException {
-    if (size>0) {
+  private void closeContainer(Writer tw, boolean forceNl, boolean compact, int size, int level, char closeWith) throws IOException {
+    if (forceNl) {
+      nl(tw, level);
+    } else if (size>0) {
       if (compact && allowCondense && allowMultiVal) tw.write(' ');
       else nl(tw, level);
     }
     tw.write(closeWith);
   }
 
-  static String escapeName(String name) {
-    return escapeName(name, false);
-  }
-
-  static String escapeName(String name, boolean force) {
-    if (force || name.length()==0 || needsEscapeName.matcher(name).find())
+  private static String escapeName(String name) {
+    if (name.length()==0 || NEEDS_ESCAPE_NAME.matcher(name).find())
       return "\""+JsonWriter.escapeString(name)+"\"";
     else
       return name;
   }
 
-  void writeString(String value, Writer tw, int level, boolean forceQuotes, String separator) throws IOException {
+  private void writeString(String value, Writer tw, int level, boolean forceQuotes) throws IOException {
     if (value.length()==0) { tw.write("\"\""); return; }
 
     char left=value.charAt(0), right=value.charAt(value.length()-1);
-    char left1=value.length()>1?value.charAt(1):'\0', left2=value.length()>2?value.charAt(2):'\0';
+    char left1=value.length()>1?value.charAt(1):'\0';
     boolean doEscape=false;
     char[] valuec=value.toCharArray();
     for(char ch : valuec) {
@@ -268,7 +291,7 @@ class HjsonWriter {
     }
 
     if (doEscape ||
-      HjsonParser.isWhiteSpace(left) || HjsonParser.isWhiteSpace(right) ||
+      HjsonParser.isWhitespace(left) || HjsonParser.isWhitespace(right) ||
       left=='"' ||
       left=='\'' ||
       left=='#' ||
@@ -290,7 +313,7 @@ class HjsonWriter {
       boolean noEscapeML=true, allWhite=true;
       for(char ch : valuec) {
         if (needsEscapeML(ch)) { noEscapeML=false; break; }
-        else if (!HjsonParser.isWhiteSpace(ch)) allWhite=false;
+        else if (!HjsonParser.isWhitespace(ch)) allWhite=false;
       }
       if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level);
       else tw.write("\""+JsonWriter.escapeString(value)+"\"");
@@ -302,7 +325,7 @@ class HjsonWriter {
     }
   }
 
-  void writeMLString(String value, Writer tw, int level) throws IOException {
+  private void writeMLString(String value, Writer tw, int level) throws IOException {
     String[] lines=value.replace("\r", "").split("\n", -1);
 
     if (lines.length==1) {
@@ -324,7 +347,7 @@ class HjsonWriter {
     }
   }
 
-  void writeComment(String comment, Writer tw, int level) throws IOException {
+  private void writeComment(String comment, Writer tw, int level) throws IOException {
     String[] lines = comment.split("\r?\n");
     // The first line is already indented. No nl() needed.
     indentComment(tw);
@@ -338,31 +361,27 @@ class HjsonWriter {
     }
   }
 
-  static boolean startsWithKeyword(String text) {
+  private static boolean startsWithKeyword(String text) {
     int p;
     if (text.startsWith("true") || text.startsWith("null")) p=4;
     else if (text.startsWith("false")) p=5;
     else return false;
-    while (p<text.length() && HjsonParser.isWhiteSpace(text.charAt(p))) p++;
+    while (p<text.length() && HjsonParser.isWhitespace(text.charAt(p))) p++;
     if (p==text.length()) return true;
     char ch=text.charAt(p);
     return ch==',' || ch=='}' || ch==']' || ch=='#' || ch=='/' && (text.length()>p+1 && (text.charAt(p+1)=='/' || text.charAt(p+1)=='*'));
   }
 
-  static boolean forceQuoteArray(JsonValue value, JsonArray array, boolean outputComments) {
+  private static boolean forceQuoteArray(JsonValue value, JsonArray array, boolean outputComments) {
     return value.isString() && (array.isCondensed() || array.getLineLength()>1 || (outputComments && value.hasEOLComment()));
   }
 
   // Technically different methods.
-  static boolean forceQuoteValue(JsonValue value, JsonObject object, boolean outputComments) {
+  private static boolean forceQuoteValue(JsonValue value, JsonObject object, boolean outputComments) {
     return value.isString() && (object.isCondensed() || object.getLineLength()>1 || (outputComments && value.hasEOLComment()));
   }
 
-  static boolean forceQuoteObject(JsonObject object) {
-    return object.isCondensed() || object.getLineLength()>1;
-  }
-
-  static boolean needsQuotes(char c) {
+  private static boolean needsQuotes(char c) {
     switch (c) {
       case '\t':
       case '\f':
@@ -375,7 +394,7 @@ class HjsonWriter {
     }
   }
 
-  static boolean needsEscape(char c) {
+  private static boolean needsEscape(char c) {
     switch (c) {
       case '\"':
       case '\\':
@@ -385,7 +404,7 @@ class HjsonWriter {
     }
   }
 
-  static boolean needsEscapeML(char c) {
+  private static boolean needsEscapeML(char c) {
     switch (c) {
       case '\n':
       case '\r':

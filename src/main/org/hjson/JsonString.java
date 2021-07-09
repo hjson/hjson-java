@@ -51,7 +51,7 @@ class JsonString extends JsonValue {
 
   @Override
   public int hashCode() {
-    return string.hashCode();
+    return super.hashCode() * 59 + string.hashCode();
   }
 
   @Override

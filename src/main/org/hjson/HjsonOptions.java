@@ -28,6 +28,7 @@ public class HjsonOptions {
 
   private IHjsonDsfProvider[] dsf;
   private boolean outputComments;
+  private boolean outputEmptyLines;
   private boolean legacyRoot;
   private boolean bracesSameLine;
   private boolean allowCondense;
@@ -45,6 +46,7 @@ public class HjsonOptions {
     space="  ";
     commentSpace="";
     outputComments=false;
+    outputEmptyLines=false;
   }
 
   /**
@@ -52,7 +54,9 @@ public class HjsonOptions {
    *
    * @return providers.
    */
-  public IHjsonDsfProvider[] getDsfProviders() { return dsf.clone(); }
+  public IHjsonDsfProvider[] getDsfProviders() {
+    return dsf.clone();
+  }
 
   /**
    * Sets the DSF providers.
@@ -60,14 +64,19 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setDsfProviders(IHjsonDsfProvider... value) { dsf=value.clone(); return this; }
+  public HjsonOptions setDsfProviders(IHjsonDsfProvider... value) {
+    dsf = value.clone();
+    return this;
+  }
 
   /**
    * Detects whether objects without root braces are supported.
    *
    * @return <code>true</code> if this feature is enabled.
    */
-  public boolean getParseLegacyRoot() { return legacyRoot; }
+  public boolean getParseLegacyRoot() {
+    return legacyRoot;
+  }
 
   /**
    * Sets whether root braces should be emitted.
@@ -75,14 +84,19 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setParseLegacyRoot(boolean value) { legacyRoot=value; return this; }
+  public HjsonOptions setParseLegacyRoot(boolean value) {
+    legacyRoot = value;
+    return this;
+  }
 
   /**
    * Detects whether root braces should be emitted.
    *
    * @return <code>true</code> if this feature is enabled.
    */
-  public boolean getEmitRootBraces() { return emitRootBraces; }
+  public boolean getEmitRootBraces() {
+    return emitRootBraces;
+  }
 
   /**
    * Sets whether root braces should be emitted.
@@ -90,7 +104,10 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setEmitRootBraces(boolean value) { emitRootBraces=value; return this; }
+  public HjsonOptions setEmitRootBraces(boolean value) {
+    emitRootBraces = value;
+    return this;
+  }
 
   /**
    * Detects whether braces and brackets should be placed on new lines.
@@ -105,14 +122,19 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setBracesSameLine(boolean value) { bracesSameLine=value; return this; }
+  public HjsonOptions setBracesSameLine(boolean value) {
+    bracesSameLine = value;
+    return this;
+  }
 
   /**
    * Detects whether more than one value is ever allowed on a single line.
    *
    * @return <code>true</code> if more than one value is allowed.
    */
-  public boolean getAllowMultiVal() { return allowMultiVal; }
+  public boolean getAllowMultiVal() {
+    return allowMultiVal;
+  }
 
   /**
    * Sets whether more than one value is ever allowed to be placed on a single line.
@@ -120,14 +142,19 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setAllowMultiVal(boolean value) { allowMultiVal=value; return this; }
+  public HjsonOptions setAllowMultiVal(boolean value) {
+    allowMultiVal = value;
+    return this;
+  }
 
   /**
    * Detects whether objects an arrays are allowed to be displayed on a single line.
    *
    * @return <code>true</code> if objects and arrays can be displayed on a single line.
    */
-  public boolean getAllowCondense() { return allowCondense; }
+  public boolean getAllowCondense() {
+    return allowCondense;
+  }
 
   /**
    * Sets whether objects and arrays can be displayed on a single line.
@@ -135,7 +162,10 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setAllowCondense(boolean value) { allowCondense=value; return this; }
+  public HjsonOptions setAllowCondense(boolean value) {
+    allowCondense = value;
+    return this;
+  }
 
   /**
    * Gets the characters to be placed per-level on each new line.
@@ -150,7 +180,10 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setSpace(String value) { space=value; return this; }
+  public HjsonOptions setSpace(String value) {
+    space = value;
+    return this;
+  }
 
   /**
    * Sets the number of spaces to be placed per-level on each new line.
@@ -158,14 +191,19 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setSpace(int value) { space=numSpaces(value); return this; }
+  public HjsonOptions setSpace(int value) {
+    space = numSpaces(value);
+    return this;
+  }
 
   /**
    * Gets the characters to be placed before comments on new lines.
    *
    * @return the number of spaces.
    */
-  public String getCommentSpace() { return commentSpace; }
+  public String getCommentSpace() {
+    return commentSpace;
+  }
 
   /**
    * Sets the characters to be placed before comments on new lines.
@@ -173,7 +211,10 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setCommentSpace(String value) { commentSpace=value; return this; }
+  public HjsonOptions setCommentSpace(String value) {
+    commentSpace = value;
+    return this;
+  }
 
   /**
    * Sets the number of spaces to be placed before comments on new lines.
@@ -181,7 +222,10 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setCommentSpace(int value) { commentSpace=numSpaces(value); return this; }
+  public HjsonOptions setCommentSpace(int value) {
+    commentSpace = numSpaces(value);
+    return this;
+  }
 
   /**
    * Generates a String object based on the input number of spaces.
@@ -190,8 +234,10 @@ public class HjsonOptions {
    * @return a string containing the input number of spaces.
    */
   private String numSpaces(int value) {
-    StringBuilder sb = new StringBuilder();
-    for (int i=0; i<value; i++) { sb.append(' '); }
+    final StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < value; i++) {
+      sb.append(' ');
+    }
     return sb.toString();
   }
 
@@ -201,12 +247,37 @@ public class HjsonOptions {
    * @param value value
    * @return this, to enable chaining
    */
-  public HjsonOptions setOutputComments(boolean value) { outputComments = value; return this; }
+  public HjsonOptions setOutputComments(boolean value) {
+    outputComments = value;
+    return this;
+  }
 
   /**
    * Gets whether comments are enabled on the output.
    *
    * @return whether comments are enabled
    */
-  public boolean getOutputComments() { return outputComments; }
+  public boolean getOutputComments() {
+    return outputComments;
+  }
+
+  /**
+   * Sets whether comments are enabled on the output.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setOutputEmptyLines(boolean value) {
+    outputEmptyLines = value;
+    return this;
+  }
+
+  /**
+   * Gets whether comments are enabled on the output.
+   *
+   * @return whether comments are enabled
+   */
+  public boolean getOutputEmptyLines() {
+    return outputEmptyLines;
+  }
 }

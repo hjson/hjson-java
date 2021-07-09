@@ -1,6 +1,6 @@
 {
   obj: {
-    inner: { "value": true }
+    inner: { value: true }
   }
   array: [
     {
