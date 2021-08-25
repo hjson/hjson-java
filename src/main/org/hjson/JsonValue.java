@@ -80,17 +80,20 @@ public abstract class JsonValue implements Serializable {
   protected int numLines=0;
 
   /**
-   * Gets the newline charater(s).
+   * Gets the newline character(s).
    *
    * @return the eol value
    */
+  @Deprecated
   public static String getEol() { return eol; }
 
   /**
    * Sets the newline character(s).
    *
+   * @deprecated Use {@link HjsonOptions#setNewLine}
    * @param value the eol value
    */
+  @Deprecated
   public static void setEol(String value) {
     if (value.equals("\r\n") || value.equals("\n")) eol=value;
   }

@@ -35,6 +35,7 @@ public class HjsonOptions {
   private boolean allowMultiVal;
   private boolean emitRootBraces;
   private String space, commentSpace;
+  private String newLine;
 
   public HjsonOptions() {
     dsf=new IHjsonDsfProvider[0];
@@ -47,6 +48,7 @@ public class HjsonOptions {
     commentSpace="";
     outputComments=false;
     outputEmptyLines=false;
+    newLine=JsonValue.eol;
   }
 
   /**
@@ -199,7 +201,7 @@ public class HjsonOptions {
   /**
    * Gets the characters to be placed before comments on new lines.
    *
-   * @return the number of spaces.
+   * @return the number of spaces
    */
   public String getCommentSpace() {
     return commentSpace;
@@ -213,6 +215,26 @@ public class HjsonOptions {
    */
   public HjsonOptions setCommentSpace(String value) {
     commentSpace = value;
+    return this;
+  }
+
+  /**
+   * Gets the new line character(s) to be output by the writer.
+   *
+   * @return the new line character(s)
+   */
+  public String getNewLine() {
+    return this.newLine;
+  }
+
+  /**
+   * Sets the new line character(s) to be output by the writer.
+   *
+   * @param nl The new line characters to be used
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setNewLine(String nl) {
+    if ("\n".equals(nl) || "\r\n".equals(nl)) newLine = nl;
     return this;
   }
 

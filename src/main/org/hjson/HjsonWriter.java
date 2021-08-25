@@ -37,6 +37,7 @@ class HjsonWriter {
   private final boolean emitRootBraces;
   private final String space;
   private final String commentSpace;
+  private final String eol;
 
   private static final Pattern NEEDS_ESCAPE_NAME = Pattern.compile("[,{\\[}\\]\\s:#\"']|//|/\\*");
 
@@ -51,6 +52,7 @@ class HjsonWriter {
       outputComments=options.getOutputComments();
       outputEmptyLines=options.getOutputEmptyLines();
       emitRootBraces=options.getEmitRootBraces();
+      eol=options.getNewLine();
     } else {
       dsfProviders=new IHjsonDsfProvider[0];
       bracesSameLine=false;
@@ -61,6 +63,7 @@ class HjsonWriter {
       commentSpace="";
       outputComments=false;
       outputEmptyLines=false;
+      eol=JsonValue.eol;
     }
   }
 
@@ -69,7 +72,7 @@ class HjsonWriter {
   }
 
   private void nl(Writer tw, int level) throws IOException {
-    tw.write(JsonValue.eol);
+    tw.write(this.eol);
     indent(tw, level);
   }
 

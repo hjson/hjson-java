@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-version = '3.0.0-C1'
+version = '3.0.0-C2'
 group = 'org.hjson'
 description = """Hjson, the Human JSON."""
 

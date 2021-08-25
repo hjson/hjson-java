@@ -46,7 +46,7 @@ class JsonWriter {
     switch (value.getType()) {
       case OBJECT:
         JsonObject obj=value.asObject();
-        if (obj.size()>0) nl(tw, level);
+        if (obj.size()>0 && level>0) nl(tw, level);
         tw.write('{');
         for (JsonObject.Member pair : obj) {
           if (following) tw.write(",");
