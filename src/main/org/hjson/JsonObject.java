@@ -129,6 +129,20 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Unsafe. Returns a raw map of the values contained within this object. For compatibility with
+   * other config wrappers.
+   *
+   * @return the object as a map of string -&gt; raw object.
+   */
+  public Map<String, Object> asRawMap() {
+    final Map<String, Object> map=new HashMap<>();
+    for (final Member member : this) {
+      map.put(member.name, member.value.asRaw());
+    }
+    return map;
+  }
+
+  /**
    * Returns the list of keys contained within this object.
    *
    * @return the every name defined in the object.

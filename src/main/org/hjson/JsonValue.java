@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -278,14 +279,18 @@ public abstract class JsonValue implements Serializable {
    * @param value the value to get a JSON representation for
    * @return a new JsonValue.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public static JsonValue valueOf(Object value) {
-    if (value instanceof Number) {
+    if (value==null) {
+      return JsonLiteral.jsonNull();
+    } else if (value instanceof Number) {
       return new JsonNumber(((Number) value).doubleValue());
     } else if (value instanceof String) {
       return new JsonString((String) value);
     } else if (value instanceof Boolean) {
       return (Boolean) value ? JsonLiteral.jsonTrue() : JsonLiteral.jsonFalse();
+    } else if (value instanceof Enum) {
+      return new JsonString(((Enum<?>) value).name());
     } else if (value instanceof List) {
       JsonArray array=new JsonArray();
       for (Object o : (List) value) {
@@ -293,12 +298,19 @@ public abstract class JsonValue implements Serializable {
       }
       return array;
     } else if (value instanceof Map) {
-      Set<Map.Entry> entries=((Map)value).entrySet();
       JsonObject object=new JsonObject();
+      Set<Map.Entry> entries=((Map)value).entrySet();
       for (Map.Entry entry : entries) {
         object.set(entry.getKey().toString(), valueOf(entry.getValue()));
       }
       return object;
+    } else if (value.getClass().isArray()) {
+      JsonArray array=new JsonArray();
+      int length=Array.getLength(value);
+      for (int i=0; i<length; i++) {
+        array.add(valueOf(Array.get(array, i)));
+      }
+      return array;
     } else {
       throw new UnsupportedOperationException("Unable to determine type.");
     }
@@ -676,7 +688,7 @@ public abstract class JsonValue implements Serializable {
     switch (getType()) {
       case STRING : return (T) asString();
       case NUMBER : return (T) Double.valueOf(asDouble());
-      case OBJECT : return (T) asObject();
+      case OBJECT : return (T) asObject().asRawMap();
       case ARRAY : return (T) asArray().asRawList();
       case BOOLEAN : return (T) Boolean.valueOf(asBoolean());
       case DSF : return (T) asDsf();

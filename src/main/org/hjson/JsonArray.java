@@ -114,8 +114,9 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
-   * Unsafe. Returns a raw list of the objects contained within this array. For compatibiliity with
+   * Unsafe. Returns a raw list of the values contained within this array. For compatibility with
    * other config wrappers.
+   *
    * @return the array as a list of raw objects.
    */
   public List<Object> asRawList() {
