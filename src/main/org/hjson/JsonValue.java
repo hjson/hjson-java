@@ -559,6 +559,34 @@ public abstract class JsonValue implements Serializable {
   }
 
   /**
+   * Copies every comment from another JSON value into this value. The input value be null, but
+   * will simply be ignored, if so.
+   *
+   * @param value The JSON value being copied out of.
+   * @return this, to enable chaining
+   */
+  public JsonValue copyComments(JsonValue value) {
+    if (value!=null) {
+      this.bolComment=value.bolComment;
+      this.eolComment=value.eolComment;
+      this.intComment=value.intComment;
+    }
+    return this;
+  }
+
+  /**
+   * Removes every comment from this JSON value.
+   *
+   * @return this, to enable chaining.
+   */
+  public JsonValue clearComments() {
+    this.bolComment="";
+    this.eolComment="";
+    this.intComment="";
+    return this;
+  }
+
+  /**
    * Returns this JSON value as {@link JsonObject}, assuming that this value represents a JSON
    * object. If this is not the case, an exception is thrown.
    *
