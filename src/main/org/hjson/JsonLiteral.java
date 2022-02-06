@@ -22,7 +22,7 @@
  ******************************************************************************/
 package org.hjson;
 
-class JsonLiteral extends JsonValue {
+public class JsonLiteral extends JsonValue {
 
   enum Iv { T, F, N };
 
