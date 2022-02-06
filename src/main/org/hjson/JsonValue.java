@@ -399,7 +399,8 @@ public abstract class JsonValue implements Serializable {
   }
 
   /**
-   *  Detects whether this value has been accessed in-code.
+   * Detects whether this value has been accessed in-code.
+   *
    * @return true if the value has been used.
    */
   public boolean isAccessed() {
@@ -484,38 +485,14 @@ public abstract class JsonValue implements Serializable {
 
   /**
    * Adds a comment to be associated with this value.
-   * @param type Whether to place this comment before the line, after the line, or inside of the
+   * @param type Whether to place this comment before the line, after the line, or inside the
    *             object or array, if applicable.
    * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.
    * @param comment The unformatted comment to be paired with this value.
    * @return this, to enable chaining
    */
   public JsonValue setComment(CommentType type, CommentStyle style, String comment) {
-    StringBuilder formatted=new StringBuilder();
-    if (style.equals(CommentStyle.BLOCK)){
-      formatted.append("/*");
-      formatted.append(eol);
-      formatted.append(comment);
-      formatted.append(eol);
-      formatted.append("*/");
-    } else {
-      String[] lines=comment.split("\r?\n");
-      // Iterate through all lines in the comment.
-      for (int i=0; i<lines.length; i++) {
-        // Don't concatenate lines.
-        if (i>0) formatted.append(eol);
-        // Add the indicator and extra space.
-        if (style.equals(CommentStyle.HASH)){
-          formatted.append("# ");
-        } else {
-          formatted.append("// ");
-        }
-        // Add the actual line from the comment.
-        formatted.append(lines[i]);
-      }
-    }
-    setFullComment(type, formatted.toString());
-    return this;
+    return setFullComment(type, formatComment(style, comment));
   }
 
   /**
@@ -584,6 +561,40 @@ public abstract class JsonValue implements Serializable {
     this.eolComment="";
     this.intComment="";
     return this;
+  }
+
+  /**
+   * Generates the formatted expression of the given text as a JSON comment.
+   *
+   * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.
+   * @param comment The unformatted comment to be paired with this value.
+   * @return The formatted, "raw" comment.
+   */
+  public static String formatComment(CommentStyle style, String comment) {
+    StringBuilder formatted=new StringBuilder();
+    if (style.equals(CommentStyle.BLOCK)){
+      formatted.append("/*");
+      formatted.append(eol);
+      formatted.append(comment);
+      formatted.append(eol);
+      formatted.append("*/");
+    } else {
+      String[] lines=comment.split("\r?\n");
+      // Iterate through all lines in the comment.
+      for (int i=0; i<lines.length; i++) {
+        // Don't concatenate lines.
+        if (i>0) formatted.append(eol);
+        // Add the indicator and extra space.
+        if (style.equals(CommentStyle.HASH)) {
+          formatted.append("# ");
+        } else {
+          formatted.append("// ");
+        }
+        // Add the actual line from the comment.
+        formatted.append(lines[i]);
+      }
+    }
+    return formatted.toString();
   }
 
   /**
