@@ -979,6 +979,22 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Returns the value of the member with the specified index in this object.
+   *
+   * <p>Note that this method is intended for reflecting on data in the object without semantically
+   * "consuming" it. For this reason, <b>it does not implicitly flag the returned value as used</b>.</p>
+   *
+   * @param index
+   *          the index of the member whose value is to be returned
+   * @return the value of the last member with the specified index, or <code>null</code> if this
+   *         object does not contain a member with that index
+   * @throws ArrayIndexOutOfBoundsException if the given index does not exist.
+   */
+  public JsonValue get(int index) {
+    return values.get(index);
+  }
+
+  /**
    * Returns the number of members (name/value pairs) in this object.
    *
    * @return the number of members in this object
@@ -1144,6 +1160,21 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Returns the index of the member with the given name. If this object contains multiple members
+   * with the same name, the last member will be returned.
+   *
+   * @param name The name of the member whose value is being returned.
+   * @return The index of the member with this name, or else -1.
+   */
+  public int indexOf(String name) {
+    int index=table.get(name);
+    if (index!=-1 && name.equals(names.get(index))) {
+      return index;
+    }
+    return names.lastIndexOf(name);
+  }
+
+  /**
    * Returns an iterator over the members of this object in document order. The returned iterator
    * cannot be used to modify this object.
    *
@@ -1207,14 +1238,6 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     }
     JsonObject other=(JsonObject)obj;
     return names.equals(other.names) && values.equals(other.values);
-  }
-
-  int indexOf(String name) {
-    int index=table.get(name);
-    if (index!=-1 && name.equals(names.get(index))) {
-      return index;
-    }
-    return names.lastIndexOf(name);
   }
 
   private synchronized void readObject(ObjectInputStream inputStream) throws IOException,
