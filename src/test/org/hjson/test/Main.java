@@ -93,7 +93,7 @@ public class Main {
 
   public static void main(String[] args) throws Exception {
 
-    out.println("running tests...");
+    out.println("running output tests...");
 
     String[] testNames=load("testlist.txt", false).split("\n");
     boolean allOK=true;
@@ -113,6 +113,9 @@ public class Main {
       }
       else { allOK=false; }
     }
+
+    JsonValueTest logicTests=new JsonValueTest();
+    if (!logicTests.allPassing()) allOK=false;
 
     if (!allOK) {
       out.println("FAILED!");

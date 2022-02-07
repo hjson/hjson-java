@@ -484,7 +484,41 @@ public abstract class JsonValue implements Serializable {
   public String getInteriorComment() { return intComment; }
 
   /**
+   * Gets any comment associated with this value by its type.
+   *
+   * @param type The type of comment being queried.
+   * @return The full contents of this comment, including any comment indicators.
+   */
+  public String getComment(CommentType type) {
+    switch (type) {
+      case BOL: return getBOLComment();
+      case EOL: return getEOLComment();
+      default: return getInteriorComment();
+    }
+  }
+
+  /**
+   * Gets any comment that exists above this value. Its indicators will be manually stripped.
+   *
+   * @return The text contents of this comment, excluding any comment indicators.
+   */
+  public String getCommentText() {
+    return getCommentText(CommentType.BOL);
+  }
+
+  /**
+   * Gets any comment associated with this value. Its indicators will be manually stripped.
+   *
+   * @param type The type of comment being queried.
+   * @return The text contents of this comment, excluding any comment indicators.
+   */
+  public String getCommentText(CommentType type) {
+    return stripComment(getComment(type));
+  }
+
+  /**
    * Adds a comment to be associated with this value.
+   *
    * @param type Whether to place this comment before the line, after the line, or inside the
    *             object or array, if applicable.
    * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.
@@ -497,7 +531,7 @@ public abstract class JsonValue implements Serializable {
 
   /**
    * Shorthand for {@link #setComment(CommentType, CommentStyle, String)} which defaults to sending
-   * a beginning of line, single line comment, using the default indicator, <code>#</code>.
+   * a beginning of line comment using the default indicator, <code>#</code>.
    *
    * @param comment The unformatted comment to be paired with this value.
    * @return this, to enable chaining
@@ -508,13 +542,49 @@ public abstract class JsonValue implements Serializable {
 
   /**
    * Shorthand for calling {@link #setComment(CommentType, CommentStyle, String)} which defaults to
-   * sending an end of line, single line comment, using the default indicator, <code>#</code>.
+   * sending an end of line comment using the default indicator, <code>#</code>.
    *
    * @param comment The unformatted comment to be paired with this value.
    * @return this, to enable chaining
    */
   public JsonValue setEOLComment(String comment) {
     return setComment(CommentType.EOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Shorthand for calling {@link #appendComment(CommentType, CommentStyle, String)} which defaults to
+   * appending a beginning of line comment using the default indicator, <code>#</code>
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue appendComment(String comment) {
+    return appendComment(CommentType.BOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Shorthand for calling {@link #appendComment(CommentType, CommentStyle, String)} which defaults to
+   * appending an end of line comment using the default indicator, <code>#</code>
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue appendEOLComment(String comment) {
+    return appendComment(CommentType.EOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Adds a new line onto the existing comment in the given position.
+   *
+   * @param type Whether to place this comment before the line, after the line, or inside the
+   *             object or array, if applicable.
+   * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue appendComment(CommentType type, CommentStyle style, String comment) {
+    String existing=getComment(type);
+    return setFullComment(type, existing+'\n'+formatComment(style, comment));
   }
 
   /**
@@ -572,7 +642,7 @@ public abstract class JsonValue implements Serializable {
    */
   public static String formatComment(CommentStyle style, String comment) {
     StringBuilder formatted=new StringBuilder();
-    if (style.equals(CommentStyle.BLOCK)){
+    if (style.equals(CommentStyle.BLOCK)) {
       formatted.append("/*");
       formatted.append(eol);
       formatted.append(comment);
@@ -595,6 +665,21 @@ public abstract class JsonValue implements Serializable {
       }
     }
     return formatted.toString();
+  }
+
+  /**
+   * Generates the raw text contents of this comment, stripping any comment indicators.
+   *
+   * @param comment The raw comment body, with indicators.
+   * @return The stripped version of the comment, including its message only.
+   */
+  public static String stripComment(String comment) {
+    String noSingles=comment.replaceAll("(?<=^|\n\r?)\\s*(//|#)\\s?", "");
+    if (noSingles.contains("/*")) {
+      return noSingles.replaceAll("(\\s*\n\r?)?\\s?\\*/", "")
+          .replaceAll("(?<=^|\n\r?)\\s*/?\\*\\s?", "");
+    }
+    return noSingles;
   }
 
   /**
