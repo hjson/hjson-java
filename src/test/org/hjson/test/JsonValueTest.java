@@ -2,6 +2,7 @@ package org.hjson.test;
 
 import org.hjson.CommentStyle;
 import org.hjson.JsonLiteral;
+import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.util.Objects;
@@ -25,6 +26,9 @@ final class JsonValueTest {
         stripComment_stripsMultilineBlock();
         stripComment_stripsComplexComment();
         setComment_getCommentText_preservesExactText();
+        shallowCopy_deeplyCopiesValues();
+        shallowCopy_shallowCopiesContainer();
+        deepCopy_deeplyCopiesContainer();
         return testsPassing;
     }
 
@@ -119,32 +123,76 @@ final class JsonValueTest {
         assertEquals(comment, value.getCommentText());
     }
 
+    private void shallowCopy_deeplyCopiesValues() {
+        final JsonValue value = JsonValue.valueOf(true).setAccessed(true).setComment("comment");
+        final JsonValue clone = value.shallowCopy();
+
+        assertEquals(value, clone);
+        assertNotEquals(value.isAccessed(), clone.isAccessed());
+    }
+
+    private void shallowCopy_shallowCopiesContainer() {
+        final JsonObject value = new JsonObject().add("test", "test");
+        final JsonObject clone = (JsonObject) value.shallowCopy();
+
+        assertEquals(value, clone);
+        for (int i = 0; i < value.size(); i++) {
+            assertSame(value.get(i), clone.get(i));
+        }
+    }
+
+    private void deepCopy_deeplyCopiesContainer() {
+        final JsonObject value = new JsonObject().add("test", "test");
+        final JsonObject clone = (JsonObject) value.deepCopy();
+
+        assertEquals(value, clone);
+        for (int i = 0; i < value.size(); i++) {
+            assertNotSame(value.get(i), clone.get(i));
+        }
+    }
+
     private void assertEquals(Object expected, Object actual) {
         if (!Objects.equals(expected, actual)) {
             System.err.println("Expected:\n" + expected + "\nActual:\n" + actual);
-            fail(1);
+            fail();
         }
-        pass(1);
+        pass();
+    }
+
+    private void assertNotEquals(Object expected, Object actual) {
+        if (Objects.equals(expected, actual)) {
+            System.err.println("Values should not match:\nExpected:\n" + expected + "\nActual:\n" + actual);
+            fail();
+        }
+        pass();
+    }
+
+    private void assertSame(Object expected, Object actual) {
+        if (expected != actual) {
+            System.err.println("Expected instance equality:\nExpected:\n" + expected + "\nActual:\n" + actual);
+            fail();
+        }
+        pass();
+    }
+
+    private void assertNotSame(Object expected, Object actual) {
+        if (expected == actual) {
+            System.err.println("Should be a different instance:\nExpected:\n" + expected + "\nActual:\n" + actual);
+            fail();
+        }
+        pass();
     }
 
     private void pass() {
-        pass(0);
+        System.out.println("- " + getCaller() + " OK");
     }
 
     private void fail() {
-        fail(0);
-    }
-
-    private void pass(int up) {
-        System.out.println("- " + getCaller(up) + " OK");
-    }
-
-    private void fail(int up) {
-        System.err.println("- " + getCaller(up) + " FAILED");
+        System.err.println("- " + getCaller() + " FAILED");
         this.testsPassing = false;
     }
 
-    private String getCaller(int up) {
-        return Thread.currentThread().getStackTrace()[3 + up].getMethodName();
+    private String getCaller() {
+        return Thread.currentThread().getStackTrace()[4].getMethodName();
     }
 }
