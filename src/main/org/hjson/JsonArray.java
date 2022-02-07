@@ -707,6 +707,26 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Returns the index of the given element, or else -1 if not found.
+   *
+   * @param value The value being queried in the array.
+   * @return The index of the element, or else -1 if not found.
+   */
+  public int indexOf(JsonValue value) {
+    return values.indexOf(value);
+  }
+
+  /**
+   * Returns the last index of the given element, or else -1 if not found.
+   *
+   * @param value The value being queried in the array.
+   * @return The last index of the element, or else -1 if not found.
+   */
+  public int lastIndexOf(JsonValue value) {
+    return values.lastIndexOf(value);
+  }
+
+  /**
    * Returns whether this array contains a value.
    *
    * @param value The value to search for.
