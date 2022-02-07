@@ -584,6 +584,9 @@ public abstract class JsonValue implements Serializable {
    */
   public JsonValue appendComment(CommentType type, CommentStyle style, String comment) {
     String existing=getComment(type);
+    if (existing.isEmpty()) {
+      return setFullComment(type, formatComment(style, comment));
+    }
     return setFullComment(type, existing+'\n'+formatComment(style, comment));
   }
 
