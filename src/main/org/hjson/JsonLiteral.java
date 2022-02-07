@@ -90,6 +90,12 @@ public class JsonLiteral extends JsonValue {
   }
 
   @Override
+  public JsonValue deepCopy(boolean trackAccess) {
+    JsonValue clone=new JsonLiteral(value).copyComments(this);
+    return trackAccess?clone.setAccessed(accessed):clone;
+  }
+
+  @Override
   public boolean equals(Object object) {
     if (this==object) {
       return true;

@@ -50,6 +50,12 @@ class JsonString extends JsonValue {
   }
 
   @Override
+  public JsonValue deepCopy(boolean trackAccess) {
+    JsonValue clone=new JsonString(string).copyComments(this);
+    return trackAccess?clone.setAccessed(accessed):clone;
+  }
+
+  @Override
   public int hashCode() {
     return super.hashCode() * 59 + string.hashCode();
   }

@@ -871,6 +871,25 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   @Override
+  public JsonValue shallowCopy() {
+    JsonArray clone=(JsonArray)new JsonArray().copyComments(this);
+    for (JsonValue value : values) {
+      clone.add(value);
+    }
+    return clone;
+  }
+
+  @Override
+  public JsonArray deepCopy(boolean trackAccess) {
+    JsonArray clone=(JsonArray)new JsonArray().copyComments(this);
+    if (trackAccess) clone.setAccessed(accessed);
+    for (JsonValue value : values) {
+      clone.add(value.deepCopy(trackAccess));
+    }
+    return clone;
+  }
+
+  @Override
   public int hashCode() {
     return values.hashCode();
   }

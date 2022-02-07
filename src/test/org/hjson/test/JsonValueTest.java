@@ -1,6 +1,7 @@
 package org.hjson.test;
 
 import org.hjson.CommentStyle;
+import org.hjson.JsonLiteral;
 import org.hjson.JsonValue;
 
 import java.util.Objects;
@@ -23,6 +24,7 @@ final class JsonValueTest {
         stripComment_stripsMultilineLine();
         stripComment_stripsMultilineBlock();
         stripComment_stripsComplexComment();
+        setComment_getCommentText_preservesExactText();
         return testsPassing;
     }
 
@@ -108,6 +110,13 @@ final class JsonValueTest {
         final String expected = "block comment\nsecond line\nthird line\nfourth line";
 
         assertEquals(expected, JsonValue.stripComment(comment));
+    }
+
+    private void setComment_getCommentText_preservesExactText() {
+        final String comment = "Hello, World!";
+        final JsonValue value = JsonLiteral.jsonNull().setComment(comment);
+
+        assertEquals(comment, value.getCommentText());
     }
 
     private void assertEquals(Object expected, Object actual) {

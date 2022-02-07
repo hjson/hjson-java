@@ -76,6 +76,12 @@ class JsonNumber extends JsonValue {
   }
 
   @Override
+  public JsonValue deepCopy(boolean trackAccess) {
+    JsonValue clone=new JsonNumber(value).copyComments(this);
+    return trackAccess?clone.setAccessed(accessed):clone;
+  }
+
+  @Override
   public int hashCode() {
     return super.hashCode() * 59 + Double.valueOf(value).hashCode();
   }

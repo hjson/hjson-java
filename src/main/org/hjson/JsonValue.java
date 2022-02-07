@@ -821,6 +821,38 @@ public abstract class JsonValue implements Serializable {
   }
 
   /**
+   * Generates a new instance of this value which is largely identical to this one. If this value
+   * is a container type, a new container will be generated containing the original values.
+   *
+   * @return A new instance of this value with the same data, comments, and other metadata.
+   */
+  public JsonValue shallowCopy() {
+    return deepCopy();
+  }
+
+  /**
+   * Generates a new instance of this value which is exactly identical to this one. Regardless of
+   * which type this value is, it will exclusively contain new instances recursively.
+   *
+   * <p>This implementation ignores whether the value has been accessed, but this may additionally
+   * be copied with an optional boolean parameter.</p>
+   *
+   * @return A new instance of this value with the same data, comments, and other metadata.
+   */
+  public JsonValue deepCopy() {
+    return deepCopy(false);
+  }
+
+  /**
+   * Generates a new instance of this value which is exactly identical to this one. Regardless of
+   * which type this value is, it will exclusively contain new instances recursively.
+   *
+   * @param trackAccess Whether to additionally persist access records to the new value.
+   * @return A new instance of this value with the same data, comments, and other metadata.
+   */
+  public abstract JsonValue deepCopy(boolean trackAccess);
+
+  /**
    * Writes the JSON representation of this value to the given writer in its minimal form, without
    * any additional whitespace.
    * <p>

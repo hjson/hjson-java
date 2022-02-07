@@ -1218,6 +1218,25 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   @Override
+  public JsonValue shallowCopy() {
+    JsonObject clone=(JsonObject)new JsonObject().copyComments(this);
+    for (Member member : this) {
+      clone.add(member.getName(), member.getValue());
+    }
+    return clone;
+  }
+
+  @Override
+  public JsonValue deepCopy(boolean trackAccess) {
+    JsonObject clone=(JsonObject)new JsonObject().copyComments(this);
+    if (trackAccess) clone.setAccessed(accessed);
+    for (Member member : this) {
+      clone.add(member.getName(), member.getValue().deepCopy(trackAccess));
+    }
+    return clone;
+  }
+
+  @Override
   public int hashCode() {
     int result=1;
     result=31 * result+names.hashCode();

@@ -45,6 +45,12 @@ class JsonDsf extends JsonValue {
   }
 
   @Override
+  public JsonValue deepCopy(boolean trackAccess) {
+    JsonValue clone=new JsonDsf(value).copyComments(this);
+    return trackAccess?clone.setAccessed(accessed):clone;
+  }
+
+  @Override
   public int hashCode() {
     return value.hashCode();
   }
