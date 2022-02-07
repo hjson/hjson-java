@@ -891,7 +891,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   @Override
   public int hashCode() {
-    return values.hashCode();
+    return super.hashCode() * 59 + values.hashCode();
   }
 
   @Override
@@ -899,13 +899,10 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
     if (this==object) {
       return true;
     }
-    if (object==null) {
-      return false;
+    if (object instanceof JsonArray) {
+      JsonArray other=(JsonArray)object;
+      return values.equals(other.values) && commentsMatch(other);
     }
-    if (getClass()!=object.getClass()) {
-      return false;
-    }
-    JsonArray other=(JsonArray)object;
-    return values.equals(other.values);
+    return false;
   }
 }

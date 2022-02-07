@@ -1249,14 +1249,11 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     if (this==obj) {
       return true;
     }
-    if (obj==null) {
-      return false;
+    if (obj instanceof JsonObject) {
+      JsonObject other=(JsonObject)obj;
+      return names.equals(other.names) && values.equals(other.values) && commentsMatch(other);
     }
-    if (getClass()!=obj.getClass()) {
-      return false;
-    }
-    JsonObject other=(JsonObject)obj;
-    return names.equals(other.names) && values.equals(other.values);
+    return false;
   }
 
   private synchronized void readObject(ObjectInputStream inputStream) throws IOException,

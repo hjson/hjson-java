@@ -47,11 +47,23 @@ class JsonDsf extends JsonValue {
   @Override
   public JsonValue deepCopy(boolean trackAccess) {
     JsonValue clone=new JsonDsf(value).copyComments(this);
-    return trackAccess?clone.setAccessed(accessed):clone;
+    return trackAccess ? clone.setAccessed(accessed) : clone;
   }
 
   @Override
   public int hashCode() {
-    return value.hashCode();
+    return super.hashCode() * 59 + value.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    if (this==object) {
+      return true;
+    }
+    if (object instanceof JsonDsf) {
+      JsonDsf other=(JsonDsf)object;
+      return value.equals(other.value) && commentsMatch(other);
+    }
+    return false;
   }
 }

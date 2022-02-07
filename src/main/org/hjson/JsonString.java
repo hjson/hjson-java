@@ -52,7 +52,7 @@ class JsonString extends JsonValue {
   @Override
   public JsonValue deepCopy(boolean trackAccess) {
     JsonValue clone=new JsonString(string).copyComments(this);
-    return trackAccess?clone.setAccessed(accessed):clone;
+    return trackAccess ? clone.setAccessed(accessed) : clone;
   }
 
   @Override
@@ -65,13 +65,10 @@ class JsonString extends JsonValue {
     if (this==object) {
       return true;
     }
-    if (object==null) {
-      return false;
+    if (object instanceof JsonString) {
+      JsonString other=(JsonString)object;
+      return string.equals(other.string) && commentsMatch(other);
     }
-    if (getClass()!=object.getClass()) {
-      return false;
-    }
-    JsonString other=(JsonString)object;
-    return string.equals(other.string);
+    return false;
   }
 }

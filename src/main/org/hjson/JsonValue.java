@@ -634,6 +634,18 @@ public abstract class JsonValue implements Serializable {
   }
 
   /**
+   * Returns whether the two value contain identical comments.
+   *
+   * @param value The JSON value being compared to.
+   * @return <code>true</code> if the values contain identical comments.
+   */
+  public boolean commentsMatch(JsonValue value) {
+    return bolComment.equals(value.bolComment)
+        && eolComment.equals(value.eolComment)
+        && intComment.equals(value.intComment);
+  }
+
+  /**
    * Generates the formatted expression of the given text as a JSON comment.
    *
    * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.

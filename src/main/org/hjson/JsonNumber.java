@@ -78,7 +78,7 @@ class JsonNumber extends JsonValue {
   @Override
   public JsonValue deepCopy(boolean trackAccess) {
     JsonValue clone=new JsonNumber(value).copyComments(this);
-    return trackAccess?clone.setAccessed(accessed):clone;
+    return trackAccess ? clone.setAccessed(accessed) : clone;
   }
 
   @Override
@@ -91,13 +91,10 @@ class JsonNumber extends JsonValue {
     if (this==object) {
       return true;
     }
-    if (object==null) {
-      return false;
+    if (object instanceof JsonNumber) {
+      JsonNumber other=(JsonNumber)object;
+      return value==other.value && commentsMatch(other);
     }
-    if (getClass()!=object.getClass()) {
-      return false;
-    }
-    JsonNumber other=(JsonNumber)object;
-    return value==other.value;
+    return false;
   }
 }

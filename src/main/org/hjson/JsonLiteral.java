@@ -55,11 +55,6 @@ public class JsonLiteral extends JsonValue {
   }
 
   @Override
-  public int hashCode() {
-    return super.hashCode() * 59 + value.hashCode();
-  }
-
-  @Override
   public JsonType getType() {
     return value==Iv.N ? JsonType.NULL : JsonType.BOOLEAN;
   }
@@ -92,7 +87,12 @@ public class JsonLiteral extends JsonValue {
   @Override
   public JsonValue deepCopy(boolean trackAccess) {
     JsonValue clone=new JsonLiteral(value).copyComments(this);
-    return trackAccess?clone.setAccessed(accessed):clone;
+    return trackAccess ? clone.setAccessed(accessed) : clone;
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode() * 59 + value.hashCode();
   }
 
   @Override
@@ -100,13 +100,10 @@ public class JsonLiteral extends JsonValue {
     if (this==object) {
       return true;
     }
-    if (object==null) {
-      return false;
+    if (object instanceof JsonLiteral) {
+      JsonLiteral other=(JsonLiteral)object;
+      return value==other.value && commentsMatch(other);
     }
-    if (getClass()!=object.getClass()) {
-      return false;
-    }
-    JsonLiteral other=(JsonLiteral)object;
-    return value==other.value;
+    return false;
   }
 }
