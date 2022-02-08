@@ -797,6 +797,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   /**
    * Generates a list of paths that have not yet been accessed in-code.
+   *
    * @return the list of unused paths.
    */
   public List<String> getUnusedPaths() {
@@ -805,6 +806,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   /**
    * Generates a list of paths that <em>have</em> been accessed in-code.
+   *
    * @return the list of unused paths.
    */
   public List<String> getUsedPaths() {
@@ -827,6 +829,34 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
       if (v.isObject()) {
         for (String s : v.asObject().getUsedPaths(used)) {
           paths.add("["+index+"]."+s);
+        }
+      } else if (v.isArray()) {
+        for (String s : v.asArray().getUsedPaths(used)) {
+          paths.add("["+index+"]"+s);
+        }
+      }
+      index++;
+    }
+    return paths;
+  }
+
+  /**
+   * Generates a list of all possible paths in this array.
+   *
+   * @return the list of paths.
+   */
+  public List<String> getAllPaths() {
+    final List<String> paths=new ArrayList<String>();
+    int index=0;
+    for (JsonValue v : this) {
+      paths.add("["+index+"]");
+      if (v.isObject()) {
+        for (String s : v.asObject().getAllPaths()) {
+          paths.add("["+index+"]."+s);
+        }
+      } else if (v.isArray()) {
+        for (String s : v.asArray().getAllPaths()) {
+          paths.add("["+index+"]"+s);
         }
       }
       index++;

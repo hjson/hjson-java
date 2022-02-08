@@ -22,7 +22,7 @@ public class JsonObjectTest extends JsonTest {
     }
 
     void getUsedPaths_returnsUsedPathsOnly() {
-        final JsonObject subject = parse("a:{b:[{c:[]}]}x:[{y:{z:{}}}]");
+        final JsonObject subject = parse("a:{b:[{c:[]}]},x:[{y:{z:{}}}]");
         subject.get("a").asObject().get("b");
         subject.get("x").asArray().get(0);
 
@@ -30,7 +30,11 @@ public class JsonObjectTest extends JsonTest {
     }
 
     void getAllPaths_returnsAllPaths() {
+        final JsonObject subject = parse("a:{},b:{},c:[[{d:[]}],[]]");
+        subject.get("a");
+        subject.get("c").asArray().get(0);
 
+        assertEquals(Arrays.asList("a", "b", "c", "c[0]", "c[0][0]", "c[0][0].d", "c[1]"), subject.getAllPaths());
     }
 
     private static JsonObject parse(final String json) {

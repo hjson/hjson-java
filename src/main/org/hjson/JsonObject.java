@@ -1092,6 +1092,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
   /**
    * Generates a list of paths that have not yet been accessed in-code.
+   *
    * @return the list of unused paths.
    */
   public List<String> getUnusedPaths() {
@@ -1100,6 +1101,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
   /**
    * Generates a list of paths that <em>have</em> been accessed in-code.
+   *
    * @return the list of used paths.
    */
   public List<String> getUsedPaths() {
@@ -1124,6 +1126,28 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
         }
       } else if (m.value.isArray()) {
         for (String s : m.value.asArray().getUsedPaths(used)) {
+          paths.add(m.name+s);
+        }
+      }
+    }
+    return paths;
+  }
+
+  /**
+   * Generates a list of all possible paths in this object.
+   *
+   * @return the list of paths.
+   */
+  public List<String> getAllPaths() {
+    final List<String> paths=new ArrayList<String>();
+    for (Member m : this) {
+      paths.add(m.name);
+      if (m.value.isObject()) {
+        for (String s : m.value.asObject().getAllPaths()) {
+          paths.add(m.name+"."+s);
+        }
+      } else if (m.value.isArray()) {
+        for (String s : m.value.asArray().getAllPaths()) {
           paths.add(m.name+s);
         }
       }
