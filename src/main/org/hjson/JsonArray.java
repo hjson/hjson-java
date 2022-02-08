@@ -821,6 +821,9 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
     final List<String> paths=new ArrayList<>();
     int index=0;
     for (JsonValue v : this) {
+      if (used == v.isAccessed()) {
+        paths.add("["+index+"]");
+      }
       if (v.isObject()) {
         for (String s : v.asObject().getUsedPaths(used)) {
           paths.add("["+index+"]."+s);

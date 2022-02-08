@@ -5,14 +5,10 @@ import org.hjson.JsonLiteral;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
-import java.util.Objects;
+final class JsonValueTest extends JsonTest {
 
-final class JsonValueTest {
-
-    private boolean testsPassing = true;
-
-    boolean allPassing() {
-        JsonValue.setEol("\n");
+    @Override
+    void run() {
         formatComment_generatesHashComment();
         formatComment_generatesLineComment();
         formatComment_generatesBlockComment();
@@ -29,7 +25,6 @@ final class JsonValueTest {
         shallowCopy_deeplyCopiesValues();
         shallowCopy_shallowCopiesContainer();
         deepCopy_deeplyCopiesContainer();
-        return testsPassing;
     }
 
     private void formatComment_generatesHashComment() {
@@ -149,50 +144,5 @@ final class JsonValueTest {
         for (int i = 0; i < value.size(); i++) {
             assertNotSame(value.get(i), clone.get(i));
         }
-    }
-
-    private void assertEquals(Object expected, Object actual) {
-        if (!Objects.equals(expected, actual)) {
-            System.err.println("Expected:\n" + expected + "\nActual:\n" + actual);
-            fail();
-        }
-        pass();
-    }
-
-    private void assertNotEquals(Object expected, Object actual) {
-        if (Objects.equals(expected, actual)) {
-            System.err.println("Values should not match:\nExpected:\n" + expected + "\nActual:\n" + actual);
-            fail();
-        }
-        pass();
-    }
-
-    private void assertSame(Object expected, Object actual) {
-        if (expected != actual) {
-            System.err.println("Expected instance equality:\nExpected:\n" + expected + "\nActual:\n" + actual);
-            fail();
-        }
-        pass();
-    }
-
-    private void assertNotSame(Object expected, Object actual) {
-        if (expected == actual) {
-            System.err.println("Should be a different instance:\nExpected:\n" + expected + "\nActual:\n" + actual);
-            fail();
-        }
-        pass();
-    }
-
-    private void pass() {
-        System.out.println("- " + getCaller() + " OK");
-    }
-
-    private void fail() {
-        System.err.println("- " + getCaller() + " FAILED");
-        this.testsPassing = false;
-    }
-
-    private String getCaller() {
-        return Thread.currentThread().getStackTrace()[4].getMethodName();
     }
 }

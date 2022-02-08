@@ -114,8 +114,8 @@ public class Main {
       else { allOK=false; }
     }
 
-    JsonValueTest logicTests=new JsonValueTest();
-    if (!logicTests.allPassing()) allOK=false;
+    if (!new JsonValueTest().allPassing()) allOK=false;
+    if (!new JsonObjectTest().allPassing()) allOK=false;
 
     if (!allOK) {
       out.println("FAILED!");

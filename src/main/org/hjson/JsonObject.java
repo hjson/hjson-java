@@ -1117,7 +1117,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     for (Member m : this) {
       if (used == m.value.isAccessed()) {
         paths.add(m.name);
-      } //else {paths.add("*"+m.name);}
+      }
       if (m.value.isObject()) {
         for (String s : m.value.asObject().getUsedPaths(used)) {
           paths.add(m.name+"."+s);
