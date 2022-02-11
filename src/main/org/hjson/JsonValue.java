@@ -291,9 +291,9 @@ public abstract class JsonValue implements Serializable {
       return (Boolean) value ? JsonLiteral.jsonTrue() : JsonLiteral.jsonFalse();
     } else if (value instanceof Enum) {
       return new JsonString(((Enum<?>) value).name());
-    } else if (value instanceof List) {
+    } else if (value instanceof Iterable) {
       JsonArray array=new JsonArray();
-      for (Object o : (List) value) {
+      for (Object o : (Iterable) value) {
         array.add(valueOf(o));
       }
       return array;
@@ -308,7 +308,7 @@ public abstract class JsonValue implements Serializable {
       JsonArray array=new JsonArray();
       int length=Array.getLength(value);
       for (int i=0; i<length; i++) {
-        array.add(valueOf(Array.get(array, i)));
+        array.add(valueOf(Array.get(value, i)));
       }
       return array;
     } else {
@@ -426,6 +426,12 @@ public abstract class JsonValue implements Serializable {
     return numLines;
   }
 
+  /**
+   * Sets the number of lines before this value.
+   *
+   * @param num the number of empty lines.
+   * @return This, to enable chaining.
+   */
   public JsonValue setNumLines(int num) {
     numLines=num;
     return this;
