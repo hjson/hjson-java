@@ -14,6 +14,7 @@ final class JsonValueTest extends JsonTest {
         formatComment_generatesBlockComment();
         formatComment_generatesMultilineHash();
         formatComment_generatesMultilineLine();
+        formatComment_generatesMultilineBlock();
         stripComment_stripsHashComment();
         stripComment_stripsLineComment();
         stripComment_stripsBlockComment();
@@ -43,7 +44,7 @@ final class JsonValueTest extends JsonTest {
 
     private void formatComment_generatesBlockComment() {
         final String comment = "here's a block comment";
-        final String expected = "/*\nhere's a block comment\n*/";
+        final String expected = "/* here's a block comment */";
 
         assertEquals(expected, JsonValue.formatComment(CommentStyle.BLOCK, comment));
     }
@@ -60,6 +61,13 @@ final class JsonValueTest extends JsonTest {
         final String expected = "// here's a comment\n// with multiple lines";
 
         assertEquals(expected, JsonValue.formatComment(CommentStyle.LINE, comment));
+    }
+
+    private void formatComment_generatesMultilineBlock() {
+        final String comment = "here's a block comment\nwith multiple lines";
+        final String expected = "/*\n * here's a block comment\n * with multiple lines\n */";
+
+        assertEquals(expected, JsonValue.formatComment(CommentStyle.BLOCK, comment));
     }
 
     private void stripComment_stripsHashComment() {

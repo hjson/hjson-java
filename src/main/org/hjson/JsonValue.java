@@ -723,29 +723,51 @@ public abstract class JsonValue implements Serializable {
    * @return The formatted, "raw" comment.
    */
   public static String formatComment(CommentStyle style, String comment) {
-    StringBuilder formatted=new StringBuilder();
+    String[] lines=comment.split("\r?\n");
     if (style.equals(CommentStyle.BLOCK)) {
-      formatted.append("/*");
-      formatted.append(eol);
-      formatted.append(comment);
-      formatted.append(eol);
-      formatted.append("*/");
-    } else {
-      String[] lines=comment.split("\r?\n");
-      // Iterate through all lines in the comment.
-      for (int i=0; i<lines.length; i++) {
-        // Don't concatenate lines.
-        if (i>0) formatted.append(eol);
-        // Add the indicator and extra space.
-        if (style.equals(CommentStyle.HASH)) {
-          formatted.append("# ");
-        } else {
-          formatted.append("// ");
-        }
-        // Add the actual line from the comment.
-        formatted.append(lines[i]);
-      }
+      return formatBlockComment(lines);
     }
+    StringBuilder formatted=new StringBuilder();
+    // Iterate through all lines in the comment.
+    for (int i=0; i<lines.length; i++) {
+      // Don't concatenate lines.
+      if (i>0) formatted.append(eol);
+      // Add the indicator and extra space.
+      if (style.equals(CommentStyle.HASH)) {
+        formatted.append("# ");
+      } else {
+        formatted.append("// ");
+      }
+      // Add the actual line from the comment.
+      formatted.append(lines[i]);
+    }
+    return formatted.toString();
+  }
+
+  /**
+   * Generates the formatted expression of the given text as a block style comment.
+   *
+   * <p>Note that <b>this method will be broken by extraneous new lines in the input</b>.</p>
+   *
+   * @param lines The previously split string lines for this comment.
+   * @return The formatted, "raw" comment.
+   */
+  public static String formatBlockComment(String... lines) {
+    StringBuilder formatted=new StringBuilder();
+    if (lines.length==1) {
+      formatted.append("/* ");
+      formatted.append(lines[0]);
+      formatted.append(" */");
+      return formatted.toString();
+    }
+    formatted.append("/*");
+    formatted.append(eol);
+    for (String line : lines) {
+      formatted.append(" * ");
+      formatted.append(line);
+      formatted.append(eol);
+    }
+    formatted.append(" */");
     return formatted.toString();
   }
 
