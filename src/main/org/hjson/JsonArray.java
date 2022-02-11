@@ -905,7 +905,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   @Override
   public JsonValue shallowCopy() {
-    JsonArray clone=(JsonArray)new JsonArray().copyComments(this);
+    JsonArray clone=(JsonArray)new JsonArray().copyMetadata(this, false);
     for (JsonValue value : values) {
       clone.add(value);
     }
@@ -914,12 +914,21 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   @Override
   public JsonArray deepCopy(boolean trackAccess) {
-    JsonArray clone=(JsonArray)new JsonArray().copyComments(this);
-    if (trackAccess) clone.setAccessed(accessed);
+    JsonArray clone=(JsonArray)new JsonArray().copyMetadata(this, trackAccess);
     for (JsonValue value : values) {
       clone.add(value.deepCopy(trackAccess));
     }
     return clone;
+  }
+
+  @Override
+  public JsonValue copyMetadata(JsonValue value, boolean trackAccess) {
+    if (value instanceof JsonArray) {
+      final JsonArray array=value.asArray();
+      this.lineLength=array.lineLength;
+      this.condensed=array.condensed;
+    }
+    return super.copyMetadata(value, trackAccess);
   }
 
   @Override

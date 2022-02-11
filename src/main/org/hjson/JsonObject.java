@@ -1243,7 +1243,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
   @Override
   public JsonValue shallowCopy() {
-    JsonObject clone=(JsonObject)new JsonObject().copyComments(this);
+    JsonObject clone=(JsonObject)new JsonObject().copyMetadata(this, false);
     for (Member member : this) {
       clone.add(member.getName(), member.getValue());
     }
@@ -1252,12 +1252,21 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
   @Override
   public JsonValue deepCopy(boolean trackAccess) {
-    JsonObject clone=(JsonObject)new JsonObject().copyComments(this);
-    if (trackAccess) clone.setAccessed(accessed);
+    JsonObject clone=(JsonObject)new JsonObject().copyMetadata(this, trackAccess);
     for (Member member : this) {
       clone.add(member.getName(), member.getValue().deepCopy(trackAccess));
     }
     return clone;
+  }
+
+  @Override
+  public JsonValue copyMetadata(JsonValue value, boolean trackAccess) {
+    if (value instanceof JsonObject) {
+      final JsonObject object=value.asObject();
+      this.lineLength=object.lineLength;
+      this.condensed=object.condensed;
+    }
+    return super.copyMetadata(value, trackAccess);
   }
 
   @Override

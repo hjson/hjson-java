@@ -929,6 +929,21 @@ public abstract class JsonValue implements Serializable {
   public abstract JsonValue deepCopy(boolean trackAccess);
 
   /**
+   * Copies all metadata from another JSON value, including its comments, line length,
+   * whether it was accessed, and any other data.
+   *
+   * @param value The value being copied from.
+   * @param trackAccess Whether to additionally copy access trackers.
+   * @return <code>this</code>, for method chaining.
+   */
+  public JsonValue copyMetadata(JsonValue value, boolean trackAccess) {
+    this.copyComments(value);
+    this.numLines=value.numLines;
+    if (trackAccess) this.accessed=value.accessed;
+    return this;
+  }
+
+  /**
    * Writes the JSON representation of this value to the given writer in its minimal form, without
    * any additional whitespace.
    * <p>
