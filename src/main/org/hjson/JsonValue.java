@@ -574,6 +574,17 @@ public abstract class JsonValue implements Serializable {
   }
 
   /**
+   * Shorthand for calling {@link #appendComment(CommentType, CommentStyle, String)} which defaults to
+   * appending an interior comment using the default indicator, <code>#</code>
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue appendInteriorComment(String comment) {
+    return appendComment(CommentType.EOL, CommentStyle.HASH, comment);
+  }
+
+  /**
    * Adds a new line onto the existing comment in the given position.
    *
    * @param type Whether to place this comment before the line, after the line, or inside the
@@ -588,6 +599,56 @@ public abstract class JsonValue implements Serializable {
       return setFullComment(type, formatComment(style, comment));
     }
     return setFullComment(type, existing+'\n'+formatComment(style, comment));
+  }
+
+  /**
+   * Shorthand for calling {@link #prependComment(CommentType, CommentStyle, String)} which defaults to
+   * appending a beginning of line comment using the default indicator, <code>#</code>
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue prependComment(String comment) {
+    return prependComment(CommentType.BOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Shorthand for calling {@link #prependComment(CommentType, CommentStyle, String)} which defaults to
+   * appending an end of line comment using the default indicator, <code>#</code>
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue prependEOLComment(String comment) {
+    return prependComment(CommentType.EOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Shorthand for calling {@link #prependComment(CommentType, CommentStyle, String)} which defaults to
+   * appending an interior comment using the default indicator, <code>#</code>
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue prependInteriorComment(String comment) {
+    return prependComment(CommentType.EOL, CommentStyle.HASH, comment);
+  }
+
+  /**
+   * Adds a new line onto the existing comment in the given position.
+   *
+   * @param type Whether to place this comment before the line, after the line, or inside the
+   *             object or array, if applicable.
+   * @param style Whether to use <code>#</code>, <code>//</code>, or another such comment style.
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue prependComment(CommentType type, CommentStyle style, String comment) {
+    String existing=getComment(type);
+    if (existing.isEmpty()) {
+      return setFullComment(type, formatComment(style, comment));
+    }
+    return setFullComment(type, formatComment(style, comment)+"\n"+existing);
   }
 
   /**
