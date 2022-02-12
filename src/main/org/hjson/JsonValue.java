@@ -558,6 +558,17 @@ public abstract class JsonValue implements Serializable {
   }
 
   /**
+   * Shorthand for calling {@link #setComment(CommentType, CommentStyle, String)} which defaults to
+   * sending an interior comment using the default indicator, <code>#</code>.
+   *
+   * @param comment The unformatted comment to be paired with this value.
+   * @return this, to enable chaining
+   */
+  public JsonValue setInteriorComment(String comment) {
+    return setComment(CommentType.INTERIOR, CommentStyle.HASH, comment);
+  }
+
+  /**
    * Shorthand for calling {@link #appendComment(CommentType, CommentStyle, String)} which defaults to
    * appending a beginning of line comment using the default indicator, <code>#</code>
    *
@@ -587,7 +598,7 @@ public abstract class JsonValue implements Serializable {
    * @return this, to enable chaining
    */
   public JsonValue appendInteriorComment(String comment) {
-    return appendComment(CommentType.EOL, CommentStyle.HASH, comment);
+    return appendComment(CommentType.INTERIOR, CommentStyle.HASH, comment);
   }
 
   /**
@@ -637,7 +648,7 @@ public abstract class JsonValue implements Serializable {
    * @return this, to enable chaining
    */
   public JsonValue prependInteriorComment(String comment) {
-    return prependComment(CommentType.EOL, CommentStyle.HASH, comment);
+    return prependComment(CommentType.INTERIOR, CommentStyle.HASH, comment);
   }
 
   /**
