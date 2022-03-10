@@ -1,10 +1,8 @@
 # PersonTheCat/hjson-java
 
-### Modified version of hjson-java which supports parsing and editing comments in code.
+## Notice of deprecation
 
-Note that this repository is currently extremely experimental. I am planning a full rewrite from scratch in the coming months. 
-This will enable storing whitespace and other formatting info, additional data types, and some miscellaneous moderinizations
-to the project to bring it up to spec with Java 8.
+This repository is being replaced with a new ecosystem: [XJS](https://github.com/exjson). The new ecosystem will primarily focus on its own syntax and data storage format, but will provide compatibility with Hjson, YAML, JSON-C, and other formats through `xjs-compat`. It is also built from the ground up to support streams, type coercion, and provides a number of other utilities which I believe will make for an extremely convenient experience. If your code is based on this fork of Hjson, I recommend migrating as soon as possible. 
 
 # hjson-java
  
