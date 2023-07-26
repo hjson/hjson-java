@@ -42,6 +42,7 @@ class JsonParser {
   private int current;
   private StringBuilder captureBuffer;
   private int captureStart;
+  private static final int MAX_DEPTH=1000;
 
   /*
    * |                      bufferOffset
@@ -77,7 +78,21 @@ class JsonParser {
     return result;
   }
 
-  private JsonValue readValue() throws IOException {
+  private JsonValue readValue() throws IOException{
+    return readValue(0);
+  }
+
+
+  private JsonValue readValue(int depth) throws IOException {
+    if(current==123) {
+      ++depth;
+    }
+    /* The following has been refrenced for the resolution of the vulnerability:
+    https://github.com/FasterXML/jackson-databind/commit/fcfc4998ec23f0b1f7f8a9521c2b317b6c25892b
+    */
+    if(depth>MAX_DEPTH) {
+      throw error("The passed json has exhausted the maximum supported depth of "+MAX_DEPTH+".");
+    }
     switch(current) {
       case 'n':
         return readNull();
@@ -88,9 +103,9 @@ class JsonParser {
       case '"':
         return readString();
       case '[':
-        return readArray();
+        return readArray(depth);
       case '{':
-        return readObject();
+        return readObject(depth);
       case '-':
       case '0':
       case '1':
@@ -108,7 +123,7 @@ class JsonParser {
     }
   }
 
-  private JsonArray readArray() throws IOException {
+  private JsonArray readArray(int depth) throws IOException {
     read();
     JsonArray array=new JsonArray();
     skipWhiteSpace();
@@ -117,7 +132,7 @@ class JsonParser {
     }
     do {
       skipWhiteSpace();
-      array.add(readValue());
+      array.add(readValue(depth));
       skipWhiteSpace();
     } while (readIf(','));
     if (!readIf(']')) {
@@ -126,7 +141,7 @@ class JsonParser {
     return array;
   }
 
-  private JsonObject readObject() throws IOException {
+  private JsonObject readObject(int depth) throws IOException {
     read();
     JsonObject object=new JsonObject();
     skipWhiteSpace();
@@ -141,7 +156,7 @@ class JsonParser {
         throw expected("':'");
       }
       skipWhiteSpace();
-      object.add(name, readValue());
+      object.add(name, readValue(depth));
       skipWhiteSpace();
     } while (readIf(','));
     if (!readIf('}')) {
