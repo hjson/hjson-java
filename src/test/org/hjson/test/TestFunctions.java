@@ -39,7 +39,9 @@ class TestFunctions {
     } catch (ParseException e) {
     }
 
-		jsonString = TOO_DEEP_DOC;
-		JsonValue.readHjson(jsonString);
+		JsonValue.readHjson(_nestedDoc(TOO_DEEP_NESTING, "[ ", "] ", "0"));
+		JsonValue.readHjson(_nestedDoc(TOO_DEEP_NESTING, "{ ", "} ", "0"));
+		JsonValue.readJSON(_nestedDoc(TOO_DEEP_NESTING, "[ ", "] ", "0"));
+		JsonValue.readJSON(_nestedDoc(TOO_DEEP_NESTING, "{ ", "} ", "0"));
   }
 }
