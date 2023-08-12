@@ -31,7 +31,10 @@ class TestFunctions {
 		} catch (NumberFormatException e) {
 		}
 
-		String jsonString = TOO_DEEP_DOC;
+		String jsonString = "[\n[\n=\n[[\'\'\'\'\'\'";
+		JsonValue.readHjson(jsonString);
+
+		jsonString = TOO_DEEP_DOC;
 		JsonValue.readHjson(jsonString);
   }
 }
