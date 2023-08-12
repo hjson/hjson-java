@@ -38,6 +38,7 @@ class HjsonParser {
   private StringBuilder captureBuffer, peek;
   private boolean capture;
   private boolean legacyRoot;
+  private static final int MAX_DEPTH=1000;
 
   private IHjsonDsfProvider[] dsfProviders;
 
@@ -111,14 +112,25 @@ class HjsonParser {
     return v;
   }
 
-  private JsonValue readValue() throws IOException {
+  private JsonValue readValue() throws IOException, ParseException {
+    return readValue(0);
+  }
+
+  private JsonValue readValue(int depth) throws IOException, ParseException {
+       /* The following has been refrenced for the resolution of the vulnerability:
+    https://github.com/FasterXML/jackson-databind/commit/fcfc4998ec23f0b1f7f8a9521c2b317b6c25892b
+    */
+    if(depth>MAX_DEPTH) {
+      throw error("The passed json has exhausted the depth supported of "+MAX_DEPTH+".");
+    }
     switch(current) {
       case '\'':
       case '"': return readString();
-      case '[': return readArray();
-      case '{': return readObject(false);
+      case '[': return readArray(depth + 1);
+      case '{': return readObject(false, depth + 1);
       default: return readTfnns();
     }
+
   }
 
   private JsonValue readTfnns() throws IOException {
@@ -161,7 +173,7 @@ class HjsonParser {
     }
   }
 
-  private JsonArray readArray() throws IOException {
+  private JsonArray readArray(int depth) throws IOException {
     read();
     JsonArray array=new JsonArray();
     skipWhiteSpace();
@@ -170,7 +182,7 @@ class HjsonParser {
     }
     while (true) {
       skipWhiteSpace();
-      array.add(readValue());
+      array.add(readValue(depth));
       skipWhiteSpace();
       if (readIf(',')) skipWhiteSpace(); // , is optional
       if (readIf(']')) break;
@@ -180,6 +192,10 @@ class HjsonParser {
   }
 
   private JsonObject readObject(boolean objectWithoutBraces) throws IOException {
+    return this.readObject(objectWithoutBraces, 0);
+  }
+
+  private JsonObject readObject(boolean objectWithoutBraces, int depth) throws IOException, ParseException {
     if (!objectWithoutBraces) read();
     JsonObject object=new JsonObject();
     skipWhiteSpace();
@@ -196,7 +212,7 @@ class HjsonParser {
         throw expected("':'");
       }
       skipWhiteSpace();
-      object.add(name, readValue());
+      object.add(name, readValue(depth));
       skipWhiteSpace();
       if (readIf(',')) skipWhiteSpace(); // , is optional
     }
