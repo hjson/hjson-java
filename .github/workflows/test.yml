@@ -15,5 +15,5 @@ jobs:
           distribution: 'temurin'
           java-version: '8'
       - run: java -version
-      - run: gradle -version
-      - run: gradle test --warning-mode all
+      - run: ./gradlew -version
+      - run: ./gradlew test --warning-mode all
