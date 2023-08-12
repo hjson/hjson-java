@@ -1,6 +1,6 @@
 package org.hjson.test;
 
-import org.hjson.*;
+import org.hjson.JsonValue;
 
 class TestFunctions {
 	public final static int TOO_DEEP_NESTING = 9999;
@@ -25,6 +25,12 @@ class TestFunctions {
 	}
 
   static void Exec() {
+		try {
+			JsonValue.valueOf(Math.log(-1)).toString();
+			throw new RuntimeException("Accepted NaN double");
+		} catch (NumberFormatException e) {
+		}
+
 		String jsonString = TOO_DEEP_DOC;
 		JsonValue.readHjson(jsonString);
   }
