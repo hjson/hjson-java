@@ -1,6 +1,5 @@
 apply plugin: 'java'
 
-version = '3.0.0'
 group = 'org.hjson'
 description = """Hjson, the Human JSON."""
 
@@ -36,7 +35,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 jar {
   manifest {
     attributes(
-      'Hjson-Version': version,
+      'Hjson-Version': project.version,
     )
   }
 }
@@ -48,10 +47,10 @@ artifacts {
 }
 
 task(testSuite, dependsOn: ['classes','testClasses'], type: JavaExec) {
-  main = 'org.hjson.test.Main'
+  mainClass = 'org.hjson.test.Main'
   classpath = files(sourceSets.main.runtimeClasspath, sourceSets.test.runtimeClasspath)
 }
 
 test.dependsOn testSuite
 
-apply from: 'gradle-mvn-push.gradle'
+//apply from: 'gradle-mvn-push.gradle'
