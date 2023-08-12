@@ -46,6 +46,8 @@ import java.io.Writer;
  * Instances that represent JSON <strong>numbers</strong>, <strong>strings</strong> and
  * <strong>boolean</strong> values can be created using the static factory methods
  * {@link #valueOf(String)}, {@link #valueOf(long)}, {@link #valueOf(double)}, etc.
+ * {@link #valueOf(float)} and {@link #valueOf(double)} throw a <strong>NumberFormatException
+ * </strong> if the input is <strong>Inf</strong> or <strong>NaN</strong>.
  * </p>
  * <p>
  * In order to find out whether an instance of this class is of a certain type, the methods
@@ -224,6 +226,9 @@ public abstract class JsonValue implements Serializable {
   /**
    * Returns a JsonValue instance that represents the given <code>float</code> value.
    *
+   * Throws a <strong>NumberFormatException</strong> if the input parameter
+   * is <strong>Inf</strong> or <strong>NaN</strong>.
+   *
    * @param value the value to get a JSON representation for
    * @return a JSON value that represents the given value
    */
@@ -233,6 +238,9 @@ public abstract class JsonValue implements Serializable {
 
   /**
    * Returns a JsonValue instance that represents the given <code>double</code> value.
+   *
+   * Throws a <strong>NumberFormatException</strong> if the input parameter
+   * is <strong>Inf</strong> or <strong>NaN</strong>.
    *
    * @param value the value to get a JSON representation for
    * @return a JSON value that represents the given value
