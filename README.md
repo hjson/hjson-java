@@ -1,8 +1,8 @@
 # hjson-java
 
-[![Build Status](https://img.shields.io/travis/hjson/hjson-java.svg?style=flat-square)](http://travis-ci.org/hjson/hjson-java)
+[![Build Status](https://github.com/hjson/hjson-java/workflows/test/badge.svg)](https://github.com/hjson/hjson-java/actions)
 [![Maven Central](https://img.shields.io/maven-central/v/org.hjson/hjson.svg?style=flat-square)](http://search.maven.org/#search|ga|1|g%3A%22org.hjson%22%20a%3A%22hjson%22)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/org.hjson/hjson/badge.svg?style=flat-square&color=blue)](http://www.javadoc.io/doc/org.hjson/hjson)
+[![Javadoc](https://img.shields.io/badge/Javadoc-blue)](http://www.javadoc.io/doc/org.hjson/hjson)
 
 [Hjson](https://hjson.github.io), the Human JSON. A configuration file format for humans. Relaxed syntax, fewer mistakes, more comments.
 

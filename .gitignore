@@ -2,10 +2,6 @@
 .gradle/
 build/
 
-gradle
-gradlew
-gradle.bat
-
 # IntelliJ
 *.iml
 .idea

@@ -84,6 +84,8 @@ public class Main {
 
     out.println("running tests...");
 
+    TestFunctions.Exec();
+
     String[] testNames=load("testlist.txt", false).split("\n");
     boolean allOK=true;
 
