@@ -84,9 +84,6 @@ class JsonParser {
 
 
   private JsonValue readValue(int depth) throws IOException {
-    if(current==123) {
-      ++depth;
-    }
     /* The following has been refrenced for the resolution of the vulnerability:
     https://github.com/FasterXML/jackson-databind/commit/fcfc4998ec23f0b1f7f8a9521c2b317b6c25892b
     */
@@ -103,9 +100,9 @@ class JsonParser {
       case '"':
         return readString();
       case '[':
-        return readArray(depth);
+        return readArray(depth + 1);
       case '{':
-        return readObject(depth);
+        return readObject(depth + 1);
       case '-':
       case '0':
       case '1':
