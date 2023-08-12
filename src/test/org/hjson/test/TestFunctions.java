@@ -1,6 +1,7 @@
 package org.hjson.test;
 
 import org.hjson.JsonValue;
+import org.hjson.ParseException;
 
 class TestFunctions {
 	public final static int TOO_DEEP_NESTING = 9999;
@@ -32,7 +33,11 @@ class TestFunctions {
 		}
 
 		String jsonString = "[\n[\n=\n[[\'\'\'\'\'\'";
-		JsonValue.readHjson(jsonString);
+    try {
+		  JsonValue.readHjson(jsonString);
+			throw new RuntimeException("Accepted non-terminated array");
+    } catch (ParseException e) {
+    }
 
 		jsonString = TOO_DEEP_DOC;
 		JsonValue.readHjson(jsonString);
