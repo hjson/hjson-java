@@ -16,4 +16,4 @@ jobs:
           java-version: '8'
       - run: java -version
       - run: gradle -version
-      - run: gradle test
+      - run: gradle test --warning-mode all
