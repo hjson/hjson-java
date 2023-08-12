@@ -25,7 +25,7 @@ class TestFunctions {
 		return sb.toString();
 	}
 
-  static void Exec() {
+	static void Exec() {
 		try {
 			JsonValue.valueOf(Math.log(-1)).toString();
 			throw new RuntimeException("Accepted NaN double");
@@ -33,15 +33,31 @@ class TestFunctions {
 		}
 
 		String jsonString = "[\n[\n=\n[[\'\'\'\'\'\'";
-    try {
-		  JsonValue.readHjson(jsonString);
+		try {
+			JsonValue.readHjson(jsonString);
 			throw new RuntimeException("Accepted non-terminated array");
-    } catch (ParseException e) {
-    }
+		} catch (ParseException e) {
+		}
 
-		JsonValue.readHjson(_nestedDoc(TOO_DEEP_NESTING, "[ ", "] ", "0"));
-		JsonValue.readHjson(_nestedDoc(TOO_DEEP_NESTING, "{ ", "} ", "0"));
-		JsonValue.readJSON(_nestedDoc(TOO_DEEP_NESTING, "[ ", "] ", "0"));
-		JsonValue.readJSON(_nestedDoc(TOO_DEEP_NESTING, "{ ", "} ", "0"));
-  }
+		try {
+			JsonValue.readHjson(_nestedDoc(TOO_DEEP_NESTING, "[ ", "] ", "0"));
+			throw new RuntimeException("Accepted too deep array in Hjson");
+		} catch (ParseException e) {
+		}
+		try {
+			JsonValue.readHjson(_nestedDoc(TOO_DEEP_NESTING, "{ ", "} ", "0"));
+			throw new RuntimeException("Accepted too deep object in Hjson");
+		} catch (ParseException e) {
+		}
+		try {
+			JsonValue.readJSON(_nestedDoc(TOO_DEEP_NESTING, "[ ", "] ", "0"));
+			throw new RuntimeException("Accepted too deep array in JSON");
+		} catch (ParseException e) {
+		}
+		try {
+			JsonValue.readJSON(_nestedDoc(TOO_DEEP_NESTING, "{ ", "} ", "0"));
+			throw new RuntimeException("Accepted too deep object in JSON");
+		} catch (ParseException e) {
+		}
+	}
 }
