@@ -1,7 +1,7 @@
 name: Publish hjson-java releases on Maven
 on:
   release:
-    types: [published]
+    types: [created]
 jobs:
   publish:
     runs-on: ubuntu-latest

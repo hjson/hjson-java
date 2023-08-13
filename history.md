@@ -1,5 +1,8 @@
 # hjson-java History
 
+- v3.0.1
+  - fix for CVE-2023-34620 by not trying to parse more than 1000 levels into arrays and/or objects
+  - fix for empty multiline string inside array or object
 - v3.0.0
   - add support for single quoted strings
   - add option to turn off legacy support for omitting root braces

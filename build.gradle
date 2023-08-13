@@ -1,7 +1,8 @@
-apply plugin: 'java'
-
-group = 'org.hjson'
-description = """Hjson, the Human JSON."""
+plugins {
+  id 'java'
+  id 'maven-publish'
+  id 'signing'
+}
 
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
@@ -55,4 +56,46 @@ task(testSuite, dependsOn: ['classes','testClasses'], type: JavaExec) {
 
 test.dependsOn testSuite
 
-//apply from: 'gradle-mvn-push.gradle'
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from components.java
+      pom {
+        description = project.description
+        url = "https://github.com/hjson/hjson-java"
+        licenses {
+          license {
+            name = "The MIT License (MIT)"
+            url = "https://github.com/hjson/hjson-java/blob/master/LICENSE"
+            distribution = "repo"
+          }
+        }
+        developers {
+          developer {
+            id = "laktak"
+            name = "Christian Zangl"
+          }
+        }
+        scm {
+          connection = "scm:git@github.com:hjson/hjson-java.git"
+          developerConnection = "scm:git@github.com:hjson/hjson-java.git"
+          url = "https://github.com/hjson/hjson-java"
+        }
+      }
+    }
+  }
+  repositories {
+    maven {
+      name = "OSSRH"
+      url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      credentials {
+        username = System.getenv("MAVEN_USERNAME")
+        password = System.getenv("MAVEN_PASSWORD")
+      }
+    }
+  }
+}
+
+// signing {
+//   sign publishing.publications.maven
+// }
