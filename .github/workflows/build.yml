@@ -1,6 +1,6 @@
 name: Publish hjson-java releases on Maven
 on:
-  workflow_call:
+  workflow_dispatch:
   release:
     types: [created]
 jobs:
