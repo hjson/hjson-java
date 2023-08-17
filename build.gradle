@@ -78,6 +78,10 @@ publishing {
             id = "laktak"
             name = "Christian Zangl"
           }
+          developer {
+            id = "trobro"
+            name = "Fredrik Trobro"
+          }
         }
         scm {
           connection = "scm:git@github.com:hjson/hjson-java.git"
@@ -99,6 +103,9 @@ publishing {
   }
 }
 
-// signing {
-//   sign publishing.publications.maven
-// }
+signing {
+  def signingKey = System.getenv("GPG_SIGNING_KEY")
+  def signingPassword = System.getenv("GPG_SIGNING_PASSWORD")
+  useInMemoryPgpKeys(signingKey, signingPassword)
+  sign publishing.publications.maven
+}
