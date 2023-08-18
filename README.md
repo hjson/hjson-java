@@ -45,7 +45,7 @@ Add a dependency to your `build.gradle`:
 
 ```
 dependencies {
-  compile 'org.hjson:hjson:3.0.0'
+  compile 'org.hjson:hjson:3.0.1'
 }
 ```
 
@@ -57,7 +57,7 @@ Add a dependency to your `pom.xml`:
 <dependency>
   <groupId>org.hjson</groupId>
   <artifactId>hjson</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
 </dependency>
 ```
 
@@ -67,7 +67,7 @@ Add a dependency to your `ivy.xml`:
 
 ```xml
 <dependencies>
-  <dependency org="org.hjson" name="hjson" rev="3.0.0"/>
+  <dependency org="org.hjson" name="hjson" rev="3.0.1"/>
 </dependencies>
 ```
 
