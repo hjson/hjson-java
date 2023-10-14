@@ -78,7 +78,10 @@ pass1_test.json
 pass2_test.json
 pass3_test.json
 pass4_test.json
+pass5_test.hjson
+pass6_test.hjson
 passSingle_test.hjson
+root_test.hjson
 stringify1_test.hjson
 strings2_test.hjson
 strings_test.hjson
