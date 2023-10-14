@@ -1,5 +1,11 @@
 # hjson-java History
 
+- v3.1.0
+  - escapes all control chars
+  - changes in formatted JSON output:
+    - opening braces now appear on the same line as the key when an array or an object are values in an object
+    - the root object or array are no longer preceded by a blank newline
+    - empty arrays or objects now appear on a line of their own when they are elements in an array
 - v3.0.1
   - fix for CVE-2023-34620 by not trying to parse more than 1000 levels into arrays and/or objects
   - fix for empty multiline string inside array or object
