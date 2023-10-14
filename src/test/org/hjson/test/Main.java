@@ -34,10 +34,7 @@ public class Main {
     String text=load(file, inputCr);
 
     try {
-      HjsonOptions opt=new HjsonOptions();
-      opt.setParseLegacyRoot(false);
-
-      JsonValue data=JsonValue.readHjson(text, opt);
+      JsonValue data=JsonValue.readHjson(text);
       String data1=data.toString(Stringify.FORMATTED);
       String hjson1=data.toString(Stringify.HJSON);
       if (!shouldFail) {
