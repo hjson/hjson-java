@@ -28,8 +28,6 @@ public class Main {
   }
 
   private static boolean test(String name, String file, boolean inputCr, boolean outputCr) throws Exception {
-    int extIdx=file.lastIndexOf('.');
-    boolean isJson=extIdx>=0 && file.substring(extIdx).equals(".json");
     boolean shouldFail=name.startsWith("fail");
 
     JsonValue.setEol(outputCr?"\r\n":"\n");
