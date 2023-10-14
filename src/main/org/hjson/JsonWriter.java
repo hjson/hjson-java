@@ -46,7 +46,6 @@ class JsonWriter {
     switch (value.getType()) {
       case OBJECT:
         JsonObject obj=value.asObject();
-        if (obj.size()>0) nl(tw, level);
         tw.write('{');
         for (JsonObject.Member pair : obj) {
           if (following) tw.write(",");
@@ -56,8 +55,7 @@ class JsonWriter {
           tw.write("\":");
           //save(, tw, level+1, " ", false);
           JsonValue v=pair.getValue();
-          JsonType vType=v.getType();
-          if (format && vType!=JsonType.ARRAY && vType!=JsonType.OBJECT) tw.write(" ");
+          if (format) tw.write(" ");
           if (v==null) tw.write("null");
           else save(v, tw, level+1);
           following=true;
@@ -68,17 +66,14 @@ class JsonWriter {
       case ARRAY:
         JsonArray arr=value.asArray();
         int n=arr.size();
-        if (n>0) nl(tw, level);
         tw.write('[');
         for (int i=0; i<n; i++) {
-          if (following) tw.write(",");
+          if (i > 0) tw.write(",");
           JsonValue v=arr.get(i);
-          JsonType vType=v.getType();
-          if (vType!=JsonType.ARRAY && vType!=JsonType.OBJECT) nl(tw, level+1);
-          save(v, tw, level+1);
-          following=true;
+          nl(tw, level+1);
+          save(arr.get(i), tw, level+1);
         }
-        if (following) nl(tw, level);
+        if (n > 0) nl(tw, level);
         tw.write(']');
         break;
       case BOOLEAN:

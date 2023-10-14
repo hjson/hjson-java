@@ -43,16 +43,13 @@ public class Main {
       String data1=data.toString(Stringify.FORMATTED);
       String hjson1=data.toString(Stringify.HJSON);
       if (!shouldFail) {
-        JsonValue result=JsonValue.readJSON(load(name+"_result.json", inputCr));
+        String json2 = load(name+"_result.json", outputCr);
+        JsonValue result=JsonValue.readJSON(json2);
         String data2=result.toString(Stringify.FORMATTED);
         String hjson2=load(name+"_result.hjson", outputCr);
         if (!data1.equals(data2)) return failErr(name, "parse", data1, data2);
         if (!hjson1.equals(hjson2)) return failErr(name, "stringify", hjson1, hjson2);
-
-        if (isJson) {
-          String json1=data.toString(), json2=JsonValue.readHjson(text, opt).toString();
-          if (!json1.equals(json2)) return failErr(name, "json chk", json1, json2);
-        }
+        if (!data1.equals(json2)) return failErr(name, "JSON stringify", data1, json2);
       }
       else return failErr(name, "should fail", null, null);
     }
