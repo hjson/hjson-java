@@ -1,4 +1,5 @@
 charset_test.hjson
+charset2_test.hjson
 comments_test.hjson
 empty_test.hjson
 failCharset1_test.hjson
