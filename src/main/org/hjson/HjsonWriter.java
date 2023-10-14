@@ -30,6 +30,13 @@ class HjsonWriter {
 
   private IHjsonDsfProvider[] dsfProviders;
 
+  static String commonRange = "\\x7f-\\x9f\\x{00ad}\\x{0600}-\\x{0604}\\x{070f}\\x{17b4}\\x{17b5}\\x{200c}-\\x{200f}\\x{2028}-\\x{202f}\\x{2060}-\\x{206f}\\x{feff}\\x{fff0}-\\x{ffff}";
+  // needsEscape tests if the string can be written without escapes
+  static Pattern needsEscape = Pattern.compile("[\\\\\\\"\\x00-\\x1f" + commonRange + "]");
+  // needsQuotes tests if the string can be written as a quoteless string (includes needsEscape but without \\\\ and \\")
+  static Pattern needsQuotes = Pattern.compile("^\\s|^\"|^'|^#|^/\\*|^//|^\\{|^\\}|^\\[|^\\]|^:|^,|\\s$|[\\x00-\\x1f\\x7f-\\x9f\\x{00ad}\\x{0600}-\\x{0604}\\x{070f}\\x{17b4}\\x{17b5}\\x{200c}-\\x{200f}\\x{2028}-\\x{202f}\\x{2060}-\\x{206f}\\x{feff}\\x{fff0}-\\x{ffff}]");
+  // needsEscapeML tests if the string can be written as a multiline string (like needsEscape but without \\n, \\\\, \\", \\t)
+  static Pattern needsEscapeML = Pattern.compile("'''|^[\\s]+$|[\\x00-\\x08\\x0b-\\x1f" + commonRange + "]");
   static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"']|//|/\\*");
 
   public HjsonWriter(HjsonOptions options) {
@@ -104,10 +111,13 @@ class HjsonWriter {
   }
 
   static String escapeName(String name) {
-    if (name.length()==0 || needsEscapeName.matcher(name).find())
+    if (name.length()==0 || needsEscapeName.matcher(name).find() ||
+      needsEscape.matcher(name).find())
+    {
       return "\""+JsonWriter.escapeString(name)+"\"";
-    else
+    } else {
       return name;
+    }
   }
 
   void writeString(String value, Writer tw, int level, String separator) throws IOException {
@@ -115,11 +125,7 @@ class HjsonWriter {
 
     char left=value.charAt(0), right=value.charAt(value.length()-1);
     char left1=value.length()>1?value.charAt(1):'\0', left2=value.length()>2?value.charAt(2):'\0';
-    boolean doEscape=false;
-    char[] valuec=value.toCharArray();
-    for(char ch : valuec) {
-      if (needsQuotes(ch)) { doEscape=true; break; }
-    }
+    boolean doEscape=needsQuotes.matcher(value).find();
 
     if (doEscape ||
       HjsonParser.isWhiteSpace(left) || HjsonParser.isWhiteSpace(right) ||
@@ -136,17 +142,13 @@ class HjsonWriter {
       // format or we must replace the offending characters with safe escape
       // sequences.
 
-      boolean noEscape=true;
-      for(char ch : valuec) { if (needsEscape(ch)) { noEscape=false; break; } }
-      if (noEscape) { tw.write(separator+"\""+value+"\""); return; }
-
-      boolean noEscapeML=true, allWhite=true;
-      for(char ch : valuec) {
-        if (needsEscapeML(ch)) { noEscapeML=false; break; }
-        else if (!HjsonParser.isWhiteSpace(ch)) allWhite=false;
+      if (!needsEscape.matcher(value).find()) {
+        tw.write(separator+"\""+value+"\"");
+      } else if (!needsEscapeML.matcher(value).find()) {
+        writeMLString(value, tw, level, separator);
+      } else {
+        tw.write(separator+"\""+JsonWriter.escapeString(value)+"\"");
       }
-      if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level, separator);
-      else tw.write(separator+"\""+JsonWriter.escapeString(value)+"\"");
     }
     else tw.write(separator+value);
   }
@@ -182,39 +184,5 @@ class HjsonWriter {
     if (p==text.length()) return true;
     char ch=text.charAt(p);
     return ch==',' || ch=='}' || ch==']' || ch=='#' || ch=='/' && (text.length()>p+1 && (text.charAt(p+1)=='/' || text.charAt(p+1)=='*'));
-  }
-
-  static boolean needsQuotes(char c) {
-    switch (c) {
-      case '\t':
-      case '\f':
-      case '\b':
-      case '\n':
-      case '\r':
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  static boolean needsEscape(char c) {
-    switch (c) {
-      case '\"':
-      case '\\':
-        return true;
-      default:
-        return needsQuotes(c);
-    }
-  }
-
-  static boolean needsEscapeML(char c) {
-    switch (c) {
-      case '\n':
-      case '\r':
-      case '\t':
-        return false;
-      default:
-        return needsQuotes(c);
-    }
   }
 }

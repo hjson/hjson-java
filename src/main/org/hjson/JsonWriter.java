@@ -24,6 +24,7 @@ package org.hjson;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.regex.Matcher;
 
 
 class JsonWriter {
@@ -90,42 +91,25 @@ class JsonWriter {
     }
   }
 
-  static String escapeName(String name) {
-    boolean needsEscape=name.length()==0;
-    for(char ch : name.toCharArray()) {
-      if (HjsonParser.isWhiteSpace(ch) || ch=='{' || ch=='}' || ch=='[' || ch==']' || ch==',' || ch==':') {
-        needsEscape=true;
-        break;
-      }
-    }
-    if (needsEscape) return "\""+JsonWriter.escapeString(name)+"\"";
-    else return name;
-  }
-
   static String escapeString(String src) {
     if (src==null) return null;
 
-    for (int i=0; i<src.length(); i++) {
-      if (getEscapedChar(src.charAt(i))!=null) {
-        StringBuilder sb=new StringBuilder();
-        if (i>0) sb.append(src, 0, i);
-        return doEscapeString(sb, src, i);
-      }
-    }
-    return src;
-  }
+    int i = 0;
+    StringBuilder sb=new StringBuilder();
+    Matcher m = HjsonWriter.needsEscape.matcher(src);
 
-  private static String doEscapeString(StringBuilder sb, String src, int cur) {
-    int start=cur;
-    for (int i=cur; i<src.length(); i++) {
-      String escaped=getEscapedChar(src.charAt(i));
-      if (escaped!=null) {
-        sb.append(src, start, i);
-        sb.append(escaped);
-        start=i+1;
-      }
+    while (m.find()) {
+      // Assume all matches are single chars.
+      sb.append(src, i, m.start()).append(getEscapedChar(m.group().charAt(0)));
+      i = m.end();
     }
-    sb.append(src, start, src.length());
+
+    if (i < 1) {
+      return src;
+    }
+
+    sb.append(src, i, src.length());
+
     return sb.toString();
   }
 
@@ -138,7 +122,7 @@ class JsonWriter {
       case '\f': return "\\f";
       case '\b': return "\\b";
       case '\\': return "\\\\";
-      default: return null;
+      default: return "\\u" + String.format("%04x", (int) c);
     }
   }
 }
